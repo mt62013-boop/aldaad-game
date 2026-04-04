@@ -227,7 +227,7 @@ const DEFAULT_LEGACY_TITLE = "الإسلام يحارب السلبية";
 const DEFAULT_LESSON_SUBTITLE = "تعلم بمرح";
 const DEFAULT_SCHOOL_NAME = "مدرسة أكاديمية الموهبة المشتركة";
 const DEFAULT_TEACHER_NAME = "معلم اللغة العربية";
-const DEFAULT_LOGO_SRC = "school-logo.svg";
+const DEFAULT_LOGO_SRC = "school-logo.png";
 const BRANDING_STORAGE_KEY = "arabic-game-branding";
 const QUESTIONS_STORAGE_KEY = "arabic-game-custom-questions";
 const speechSupported = "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined";
@@ -415,7 +415,7 @@ function updateBranding() {
       lessonSubtitle,
       schoolName,
       teacherName,
-      customLogo: savedBranding.customLogo || (schoolLogoImage.src.includes("school-logo.svg") ? "" : schoolLogoImage.src)
+      customLogo: savedBranding.customLogo || (schoolLogoImage.src.includes(DEFAULT_LOGO_SRC) ? "" : schoolLogoImage.src)
     })
   );
 }
