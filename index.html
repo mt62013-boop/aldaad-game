@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>الضاد | تعلم بمرح</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <span class="page-corner top-right"><span></span></span>
+  <span class="page-corner top-left"><span></span></span>
+  <span class="page-corner bottom-right"><span></span></span>
+  <span class="page-corner bottom-left"><span></span></span>
+
+  <div class="app-shell">
+    <header class="hero">
+      <div class="hero-main">
+        <span class="badge">جاهزة للحصة والويب وTeams</span>
+        <div class="text-logo-wrap">
+          <span class="text-logo-mark">✦</span>
+          <h1 id="lesson-title-display" class="text-logo-title">الضاد</h1>
+          <span class="text-logo-mark">✦</span>
+        </div>
+        <p id="lesson-subtitle-display" class="text-logo-subtitle">
+          تعلم بمرح
+        </p>
+      </div>
+
+      <div class="brand-card">
+        <img src="school-logo.svg" alt="شعار مدرسة أكاديمية الموهبة المشتركة" class="school-logo" />
+        <div class="brand-meta">
+          <strong id="school-name-display">مدرسة أكاديمية الموهبة المشتركة</strong>
+          <span id="teacher-name-display">إعداد المعلم/ة: معلم اللغة العربية</span>
+        </div>
+        <button id="fullscreen-btn" class="ghost-btn" type="button">عرض بملء الشاشة</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="splash-screen" class="panel">
+        <div class="splash-screen-wrap">
+          <div class="splash-card">
+            <span class="badge splash-badge">جاري التحميل</span>
+            <div class="text-logo-wrap splash-logo-wrap">
+              <span class="text-logo-mark">✦</span>
+              <h2 class="text-logo-title splash-logo-title">الضاد</h2>
+              <span class="text-logo-mark">✦</span>
+            </div>
+            <p class="splash-subtitle">تعلم بمرح</p>
+            <div class="splash-loader-track">
+              <span class="splash-loader-bar"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="intro-screen" class="panel hidden">
+        <div class="welcome-screen">
+          <div class="welcome-card">
+            <img id="intro-logo" src="school-logo.svg" alt="شعار المدرسة" class="intro-school-logo" />
+            <span class="badge welcome-badge">مرحبًا بكم في لعبة الضاد</span>
+            <h2>تجربة عربية تفاعلية تبدأ هنا</h2>
+            <p>
+              أهلاً بكم في حصة ممتعة تجمع بين التنافس والتعلّم، وتُعرض بهوية المدرسة واسم المعلم قبل بدء الجولة.
+            </p>
+            <div class="welcome-meta">
+              <div>
+                <strong>المدرسة</strong>
+                <span id="intro-school-display">مدرسة أكاديمية الموهبة المشتركة</span>
+              </div>
+              <div>
+                <strong>المعلم</strong>
+                <span id="intro-teacher-display">إعداد المعلم/ة: معلم اللغة العربية</span>
+              </div>
+            </div>
+            <div class="action-row welcome-actions">
+              <button id="intro-welcome-btn" class="secondary-btn" type="button">استمع للترحيب</button>
+              <button id="intro-continue-btn" class="primary-btn" type="button">الدخول إلى الإعدادات</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="start-screen" class="panel hidden">
+        <div class="panel-grid">
+          <div>
+            <h2>ابدأ الجولة</h2>
+            <div class="field-group">
+              <label for="player-name">اسم الحصة أو الصف</label>
+              <input id="player-name" type="text" placeholder="مثال: 12 أدبي - الشعبة أ" maxlength="30" />
+            </div>
+
+            <div class="field-group fixed-title-box">
+              <label>اسم اللعبة</label>
+              <div class="fixed-branding-value">الضاد — تعلم بمرح</div>
+            </div>
+
+            <div class="branding-fields">
+              <div class="field-group">
+                <label for="school-name">اسم المدرسة</label>
+                <input id="school-name" type="text" value="مدرسة أكاديمية الموهبة المشتركة" maxlength="50" />
+              </div>
+              <div class="field-group">
+                <label for="teacher-name">اسم المعلم</label>
+                <input id="teacher-name" type="text" value="معلم اللغة العربية" maxlength="50" />
+              </div>
+            </div>
+            <div class="field-group">
+              <label for="logo-upload">رفع الشعار الأصلي</label>
+              <input id="logo-upload" type="file" accept="image/*" />
+            </div>
+            <p class="branding-note">يمكنك تعديل اسم المعلم واسم المدرسة من هنا مباشرة، كما يمكنك اختيار الصورة الأصلية للشعار من جهازك، وسيتم حفظها تلقائيًا داخل التطبيق، بينما يبقى اسم اللعبة ثابتًا.</p>
+            <div class="branding-actions">
+              <button id="reset-branding-btn" class="secondary-btn" type="button">إعادة القيم الافتراضية</button>
+            </div>
+
+            <details class="question-editor-panel">
+              <summary>تعديل الأسئلة من داخل التطبيق</summary>
+              <p class="question-editor-help">
+                يمكنك تعديل الأسئلة لتناسب أي موضوع، مع الإبقاء على التصنيفات: `فهم واستيعاب` أو `مفردات ودلالات` أو `تحليل`.
+              </p>
+              <div id="question-editor-list" class="question-editor-list"></div>
+              <div class="question-editor-toolbar">
+                <button id="add-question-btn" class="ghost-btn" type="button">إضافة سؤال جديد</button>
+                <button id="save-questions-btn" class="primary-btn" type="button">حفظ الأسئلة</button>
+                <button id="reset-questions-btn" class="secondary-btn" type="button">استعادة الأسئلة الأصلية</button>
+              </div>
+              <p id="question-editor-status" class="question-editor-status">يمكنك تعديل الأسئلة ثم حفظها للاستخدام الفوري.</p>
+            </details>
+
+            <div class="field-group">
+              <label>عدد الفرق</label>
+              <div class="team-count-picker">
+                <button class="team-count-btn active" data-count="2" type="button">فريقان</button>
+                <button class="team-count-btn" data-count="3" type="button">3 فرق</button>
+                <button class="team-count-btn" data-count="4" type="button">4 فرق</button>
+              </div>
+              <div id="team-inputs" class="team-inputs-grid">
+                <div class="team-input-wrap">
+                  <label for="team-1">اسم الفريق الأول</label>
+                  <input id="team-1" class="team-name-input" type="text" value="الفريق الأول" maxlength="25" />
+                </div>
+                <div class="team-input-wrap">
+                  <label for="team-2">اسم الفريق الثاني</label>
+                  <input id="team-2" class="team-name-input" type="text" value="الفريق الثاني" maxlength="25" />
+                </div>
+                <div class="team-input-wrap hidden">
+                  <label for="team-3">اسم الفريق الثالث</label>
+                  <input id="team-3" class="team-name-input" type="text" value="الفريق الثالث" maxlength="25" />
+                </div>
+                <div class="team-input-wrap hidden">
+                  <label for="team-4">اسم الفريق الرابع</label>
+                  <input id="team-4" class="team-name-input" type="text" value="الفريق الرابع" maxlength="25" />
+                </div>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label>اختر مسار الأسئلة</label>
+              <div class="mode-picker">
+                <button class="mode-btn active" data-mode="mixed" type="button">مختلط</button>
+                <button class="mode-btn" data-mode="comprehension" type="button">فهم واستيعاب</button>
+                <button class="mode-btn" data-mode="vocabulary" type="button">مفردات ودلالات</button>
+                <button class="mode-btn" data-mode="analysis" type="button">تحليل</button>
+              </div>
+            </div>
+
+            <div class="info-strip">
+              <div><strong>عدد الأسئلة:</strong> حتى 12</div>
+              <div><strong>النقاط:</strong> 10 لكل إجابة صحيحة</div>
+              <div><strong>نوع النشاط:</strong> من فريقين إلى 4 فرق</div>
+            </div>
+
+            <div class="welcome-audio-row">
+              <button id="intro-music-btn" class="ghost-btn" type="button">موسيقى البداية</button>
+              <button id="welcome-btn" class="ghost-btn" type="button">استمع للترحيب</button>
+            </div>
+
+            <button id="start-btn" class="primary-btn" type="button">ابدأ التحدي الآن</button>
+          </div>
+
+          <aside class="sidebar-card">
+            <h3>مناسبة للتدريس التفاعلي</h3>
+            <ul>
+              <li>أسئلة مباشرة من موضوع الدرس الرابع للصف الثاني عشر.</li>
+              <li>تركيز على الفهم والاستيعاب والتحليل.</li>
+              <li>تغذية راجعة فورية بعد كل إجابة.</li>
+              <li>مساعد ذكي يعطي تلميحًا تربويًا دون كشف الإجابة.</li>
+              <li>دعم صوتي اختياري لقراءة السؤال أو الشرح.</li>
+              <li>يمكن فتحها مباشرة من المتصفح ومشاركتها على Teams.</li>
+            </ul>
+
+            <div class="leaderboard-box">
+              <h4>أفضل النتائج</h4>
+              <ol id="leaderboard-list">
+                <li>ابدأ أول جولة لتسجيل النتيجة.</li>
+              </ol>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="game-screen" class="panel hidden">
+        <div class="hud">
+          <div class="hud-item"><span>الدور الحالي</span><strong id="player-label">الفريق الأول</strong></div>
+          <div class="hud-item"><span>السؤال</span><strong id="progress-label">1 / 12</strong></div>
+          <div class="hud-item"><span>نقاط الفريق</span><strong id="score-label">0</strong></div>
+          <div class="hud-item timer"><span>الوقت</span><strong id="timer-label">25</strong></div>
+        </div>
+
+        <div id="teams-board" class="teams-board"></div>
+
+        <div class="question-card">
+          <div class="question-topbar">
+            <span id="category-tag" class="category-tag">فهم واستيعاب</span>
+            <div class="progress-track">
+              <div id="progress-bar" class="progress-bar"></div>
+            </div>
+          </div>
+
+          <h2 id="question-text">سيظهر السؤال هنا</h2>
+          <div id="answers-container" class="answers-grid"></div>
+
+          <div class="assistant-card">
+            <div class="assistant-header">
+              <h3>المساعد الذكي</h3>
+              <div class="assistant-actions">
+                <button id="assist-btn" class="ghost-btn assistant-btn" type="button">اطلب تلميحًا</button>
+                <button id="read-btn" class="ghost-btn assistant-btn voice-btn" type="button">استمع للسؤال</button>
+                <button id="stop-audio-btn" class="ghost-btn assistant-btn stop-btn" type="button">إيقاف الصوت</button>
+              </div>
+            </div>
+            <p id="assistant-text" class="assistant-text">يمكنك طلب تلميح ذكي أو الاستماع إلى السؤال والشرح صوتيًا أثناء المنافسة.</p>
+          </div>
+
+          <div id="feedback-box" class="feedback hidden"></div>
+
+          <div class="action-row">
+            <button id="end-game-btn" class="ghost-btn" type="button">إنهاء اللعبة</button>
+            <button id="next-btn" class="secondary-btn hidden" type="button">السؤال التالي</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="result-screen" class="panel hidden">
+        <div class="result-card">
+          <span class="badge">انتهت الجولة</span>
+          <h2 id="result-title">أحسنت!</h2>
+          <p id="result-summary">ملخص الأداء سيظهر هنا.</p>
+
+          <div class="result-grid">
+            <div class="result-box">
+              <span>أعلى رصيد</span>
+              <strong id="final-score">0</strong>
+            </div>
+            <div class="result-box">
+              <span>إجابات الفريق الفائز</span>
+              <strong id="final-correct">0 / 12</strong>
+            </div>
+            <div class="result-box">
+              <span>نسبة الصف</span>
+              <strong id="final-percent">0%</strong>
+            </div>
+          </div>
+
+          <div class="teacher-note">
+            <h3>توصية تعليمية</h3>
+            <p id="recommendation-text">سيظهر هنا تعليق مناسب لمستوى الطالب.</p>
+          </div>
+
+          <div id="final-ranking" class="final-ranking"></div>
+
+          <div id="winner-certificate" class="winner-certificate hidden">
+            <div class="certificate-badge">شهادة فوز</div>
+            <h3>لعبة الضاد — تعلم بمرح</h3>
+            <p id="certificate-school">مدرسة أكاديمية الموهبة المشتركة</p>
+            <p>تُمنح هذه الشهادة إلى:</p>
+            <strong id="certificate-team">الفريق الفائز</strong>
+            <p id="certificate-score">بعد تحقيق أعلى نتيجة في التحدي</p>
+          </div>
+
+          <div class="action-row">
+            <button id="announce-winner-btn" class="secondary-btn" type="button">استمع لإعلان الفائز</button>
+            <button id="restart-btn" class="primary-btn" type="button">إعادة اللعب</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="confirm-modal" class="confirm-modal hidden">
+    <div class="confirm-dialog">
+      <h3>تأكيد إنهاء اللعبة</h3>
+      <p>هل أنت متأكد من إنهاء اللعبة الآن؟ سيتم عرض النتيجة الحالية مباشرة.</p>
+      <div class="action-row">
+        <button id="cancel-end-btn" class="ghost-btn" type="button">إلغاء</button>
+        <button id="confirm-end-btn" class="primary-btn" type="button">نعم، إنهاء اللعبة</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
