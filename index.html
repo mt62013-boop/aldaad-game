@@ -8,6 +8,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="mobile-web-app-capable" content="yes" />
   <title>الضاد | تعلم بمرح</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="logo-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
@@ -38,7 +40,10 @@
           <strong id="school-name-display">مدرسة أكاديمية الموهبة المشتركة</strong>
           <span id="teacher-name-display">إعداد المعلم/ة: معلم اللغة العربية</span>
         </div>
-        <button id="fullscreen-btn" class="ghost-btn" type="button">عرض بملء الشاشة</button>
+        <div class="brand-actions">
+          <button id="install-app-btn" class="ghost-btn hidden" type="button">تثبيت التطبيق</button>
+          <button id="fullscreen-btn" class="ghost-btn" type="button">عرض بملء الشاشة</button>
+        </div>
       </div>
     </header>
 

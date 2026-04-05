@@ -186,7 +186,10 @@ const introMusicBtn = document.getElementById("intro-music-btn");
 const welcomeBtn = document.getElementById("welcome-btn");
 const resetBrandingBtn = document.getElementById("reset-branding-btn");
 const fullscreenBtn = document.getElementById("fullscreen-btn");
+const installAppBtn = document.getElementById("install-app-btn");
 const leaderboardList = document.getElementById("leaderboard-list");
+
+let deferredInstallPrompt = null;
 
 const playerLabel = document.getElementById("player-label");
 const lessonTitleDisplay = document.getElementById("lesson-title-display");
@@ -314,6 +317,37 @@ fullscreenBtn.addEventListener("click", async () => {
   } else {
     await document.exitFullscreen();
   }
+});
+
+installAppBtn?.addEventListener("click", async () => {
+  if (!deferredInstallPrompt) {
+    assistantText.textContent = window.location.protocol === "file:"
+      ? "لتثبيت التطبيق، افتح اللعبة من رابط ويب مثل GitHub Pages ثم اختر تثبيت التطبيق."
+      : "خيار التثبيت سيظهر عندما يدعمه المتصفح ويستوفي شروط PWA.";
+    return;
+  }
+
+  deferredInstallPrompt.prompt();
+  const choiceResult = await deferredInstallPrompt.userChoice;
+
+  assistantText.textContent = choiceResult.outcome === "accepted"
+    ? "رائع! تم إرسال طلب تثبيت التطبيق على الهاتف."
+    : "يمكنك تثبيت التطبيق لاحقًا من المتصفح في أي وقت.";
+
+  deferredInstallPrompt = null;
+  installAppBtn.classList.add("hidden");
+});
+
+window.addEventListener("beforeinstallprompt", (event) => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  installAppBtn?.classList.remove("hidden");
+});
+
+window.addEventListener("appinstalled", () => {
+  deferredInstallPrompt = null;
+  installAppBtn?.classList.add("hidden");
+  assistantText.textContent = "تم تثبيت لعبة الضاد كتطبيق على الجهاز بنجاح.";
 });
 
 function showScreen(name) {
@@ -1141,6 +1175,18 @@ function shuffleArray(items) {
   return clone;
 }
 
+function registerPwaSupport() {
+  if (!("serviceWorker" in navigator) || window.location.protocol === "file:") {
+    return;
+  }
+
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js").catch((error) => {
+      console.warn("Service worker registration failed:", error);
+    });
+  });
+}
+
 loadSavedBranding();
 loadSavedQuestions();
 updateBranding();
@@ -1149,4 +1195,5 @@ readBtn.disabled = !speechSupported;
 stopAudioBtn.disabled = !speechSupported;
 renderLeaderboard();
 renderTeamsBoard();
+registerPwaSupport();
 beginOpeningSequence();
