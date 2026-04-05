@@ -9,7 +9,7 @@ const DEFAULT_QUESTION_BANK = [
   {
     category: "فهم واستيعاب",
     prompt: "ما الفكرة الرئيسة لدرس (الإسلام يحارب السلبية)؟",
-    options: ["الإيجابيةُ والعملُ وتحملُ المسؤوليةِ أسسٌ لنهضةِ المجتمع.", "تمجيد العزلة والابتعاد عن المجتمع", "التركيز على الحفظ دون تطبيق", "تفضيل الصمت على الإصلاح"],
+    options: ["الإيجابيةُ والعملُ وتحملُ المسؤوليةِ أسسٌ لنهضةِ المجتمع.", "الإصلاح يتحقق بالوعظ النظري وحده دون مشاركة عملية.", "المسؤولية تقع على المؤسسات وحدها دون الفرد.", "العزلة عن قضايا الناس أولى من المبادرة إلى الإصلاح."],
     correctIndex: 0,
     explanation: "الفكرة الرئيسة تُصاغ هنا في جملة اسمية واضحة من مبتدأ وخبر، وتدل على أن الإيجابية والعمل أساس نهضة المجتمع."
   },
@@ -23,9 +23,9 @@ const DEFAULT_QUESTION_BANK = [
   {
     category: "فهم واستيعاب",
     prompt: "أي سلوك يعبر عن رسالة الدرس؟",
-    options: ["المبادرة إلى حل المشكلات وخدمة الآخرين", "انتظار الآخرين ليتحملوا كل المسؤولية", "الشكوى المستمرة دون عمل", "الانسحاب من المواقف الصعبة"],
+    options: ["المبادرة إلى حل المشكلات وخدمة الآخرين", "تأجيل الإصلاح انتظارًا لتحرك الآخرين أولًا", "الاكتفاء بالنقد دون اقتراح حلول عملية", "الانشغال بالمصلحة الفردية بعيدًا عن نفع الجماعة"],
     correctIndex: 0,
-    explanation: "الدرس يدعو إلى المبادرة والإصلاح وعدم الاتكال على الآخرين."
+    explanation: "الدرس يدعو إلى المبادرة والإصلاح وعدم الاتكال على الآخرين، لذا فالسلوك العملي الإيجابي هو الأقرب إلى مضمونه."
   },
   {
     category: "فهم واستيعاب",
@@ -366,9 +366,9 @@ const DEFAULT_QUESTION_BANK = [
   {
     category: "الفهم والاستيعاب",
     prompt: "ما الفكرة المحورية التي تدور حولها قصة (جابر عثرات الكرام)؟",
-    options: ["المعروف لا يضيع بين الله والناس", "المال هو أساس السعادة", "العزلة أفضل من الاختلاط", "القوة تغلب كل شيء"],
+    options: ["المعروف يبقى أثره محفوظًا ويعود إلى صاحبه خيرًا", "الجاه الاجتماعي يغني عن الوفاء ورد الجميل", "النجاة من الأزمات تكون بإخفاء الحقيقة عن أهلها", "المال وحده هو أساس مكانة الإنسان بين الناس"],
     correctIndex: 0,
-    explanation: "الفكرة المحورية في القصة أن صنائع المعروف تبقى محفوظة ولا تضيع."
+    explanation: "الفكرة المحورية في القصة أن صنائع المعروف تبقى محفوظة ولا تضيع، وأن الإحسان الصادق يعود أثره خيرًا على صاحبه."
   },
   {
     category: "الفهم والاستيعاب",
@@ -415,9 +415,9 @@ const DEFAULT_QUESTION_BANK = [
   {
     category: "الفهم والاستيعاب",
     prompt: "ما العلاقة بين عنوان قصيدة (الوحي الخالد) ومضمونها؟",
-    options: ["يعكس جمال الطبيعة الذي يخلده الشعر", "يدل على الحزن فقط", "يشير إلى الحرب والبطولة", "يصف رحلة تاريخية"],
+    options: ["يعكس خلود أثر الجمال في نفس الشاعر عبر صور الطبيعة", "يصور صراعًا سياسيًا بين الإنسان والزمان", "يدل على أن القصيدة تاريخية خالصة", "يحصر الوحي في معنى الحزن فقط"],
     correctIndex: 0,
-    explanation: "العنوان انعكاس لمضمون القصيدة التي تخلد وحي الجمال في الطبيعة عبر الشعر."
+    explanation: "العنوان انعكاس لمضمون القصيدة؛ لأنه يربط بين وحي الجمال في الطبيعة وأثره الخالد في وجدان الشاعر."
   },
   {
     category: "الفهم والاستيعاب",
@@ -471,9 +471,9 @@ const DEFAULT_QUESTION_BANK = [
   {
     category: "الفهم والاستيعاب",
     prompt: "ما الدافع وراء إنشاد قصيدة (الغبطة فكرة)؟",
-    options: ["بيانُ غيابِ الفرحِ والدعوةُ إلى التفاؤل.", "مدح الأثرياء فقط", "الحث على السفر", "وصف معركة تاريخية"],
+    options: ["بيانُ غيابِ الفرحِ والدعوةُ إلى التفاؤل.", "تسجيل شكوى شخصية لا صلة لها بأحوال الناس", "مدح مظاهر العيد الخارجية دون النظر إلى النفوس", "وصف مشهد العيد وصفًا خبريًا محايدًا"],
     correctIndex: 0,
-    explanation: "هذا من أسئلة الغاية والدافع، لذا جاءت الإجابة بصياغة تبدأ بـ(بيان) ثم (الدعوة إلى التفاؤل)."
+    explanation: "هذا من أسئلة الغاية والدافع، لذا جاءت الإجابة بصياغة تبدأ بـ(بيان) ثم (الدعوة إلى التفاؤل)، وهو ما ينسجم مع مضمون القصيدة."
   },
   {
     category: "الفهم والاستيعاب",
@@ -1008,7 +1008,7 @@ function normalizeQuestionSet(questions = []) {
 }
 
 function mergeQuestionBanks(savedQuestions = [], defaultQuestions = []) {
-  const mergedQuestions = [...normalizeQuestionSet(savedQuestions), ...normalizeQuestionSet(defaultQuestions)];
+  const mergedQuestions = [...normalizeQuestionSet(defaultQuestions), ...normalizeQuestionSet(savedQuestions)];
   const seen = new Set();
 
   return mergedQuestions.filter((question) => {
@@ -1176,14 +1176,14 @@ function saveQuestionsFromEditor() {
 
   questionBank = normalizeQuestionSet(updatedQuestions);
   localStorage.setItem(QUESTIONS_STORAGE_KEY, JSON.stringify(questionBank));
-  renderQuestionEditor("تم حفظ الأسئلة الجديدة بنجاح، وأصبحت جاهزة للاستخدام في الجولة التالية.", "success");
+  renderQuestionEditor("تم حفظ الأسئلة الجديدة بنجاح، وأصبحت جاهزة للاستخدام في الجولة التالية مع تنويع تلقائي لمواضع الإجابات الصحيحة.", "success");
   updateQuestionCountSetting(Number(questionCountInput?.value || gameState.questionLimit));
 }
 
 function resetQuestionsToDefaults() {
   questionBank = cloneDefaultQuestions();
   localStorage.removeItem(QUESTIONS_STORAGE_KEY);
-  renderQuestionEditor("تمت استعادة الأسئلة الأصلية الخاصة بالدرس بنجاح.", "success");
+  renderQuestionEditor("تمت استعادة الأسئلة الأصلية الخاصة بالدرس بنجاح، مع تنويع مواضع الإجابات الصحيحة أثناء اللعب.", "success");
 }
 
 function addNewQuestion() {
@@ -1331,7 +1331,7 @@ function startGame() {
 
   updateQuestionCountSetting(Number(questionCountInput?.value || gameState.questionLimit));
   const totalQuestionsForRound = Math.min(gameState.questionLimit, filtered.length);
-  gameState.selectedQuestions = shuffleArray(filtered).slice(0, totalQuestionsForRound);
+  gameState.selectedQuestions = prepareQuestionsForRound(filtered, totalQuestionsForRound);
 
   if (totalQuestionsForRound < gameState.questionLimit) {
     assistantText.textContent = `تم تجهيز ${totalQuestionsForRound} سؤالًا لأن المتاح في الدرس أو المجال المختار أقل من العدد المطلوب.`;
@@ -2160,6 +2160,33 @@ function shuffleArray(items) {
     [clone[i], clone[j]] = [clone[j], clone[i]];
   }
   return clone;
+}
+
+function repositionCorrectAnswer(question, targetIndex = 0) {
+  const safeOptions = Array.isArray(question?.options) ? [...question.options] : [];
+  if (!safeOptions.length) {
+    return { ...question };
+  }
+
+  const safeCorrectIndex = Math.min(Math.max(Number(question.correctIndex) || 0, 0), safeOptions.length - 1);
+  const correctOption = safeOptions[safeCorrectIndex];
+  const wrongOptions = safeOptions.filter((_, index) => index !== safeCorrectIndex);
+  const safeTargetIndex = Math.min(Math.max(Number(targetIndex) || 0, 0), safeOptions.length - 1);
+  const balancedWrongOptions = shuffleArray(wrongOptions);
+
+  balancedWrongOptions.splice(safeTargetIndex, 0, correctOption);
+
+  return {
+    ...question,
+    options: balancedWrongOptions,
+    correctIndex: safeTargetIndex
+  };
+}
+
+function prepareQuestionsForRound(questions = [], limit = questions.length) {
+  return shuffleArray(questions)
+    .slice(0, Math.max(0, limit))
+    .map((question, index) => repositionCorrectAnswer(question, index % Math.max(question.options?.length || 4, 1)));
 }
 
 function updateConnectionStatus(showOnlineFeedback = false) {
