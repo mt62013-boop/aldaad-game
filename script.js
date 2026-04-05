@@ -573,6 +573,8 @@ const assistantText = document.getElementById("assistant-text");
 const teamsBoard = document.getElementById("teams-board");
 const scoreCaption = document.getElementById("score-caption");
 const targetSelect = document.getElementById("target-select");
+const fastestNameInput = document.getElementById("fastest-name-input");
+const participantsList = document.getElementById("participants-list");
 const applyTargetBtn = document.getElementById("apply-target-btn");
 const randomTargetBtn = document.getElementById("random-target-btn");
 const directorNote = document.getElementById("director-note");
@@ -629,7 +631,7 @@ const gameState = {
   lessonFilter: DEFAULT_LESSON_FILTER,
   questionLimit: DEFAULT_QUESTIONS_PER_GAME,
   teams: [],
-  currentTeamIndex: 0,
+  currentTeamIndex: -1,
   selectedQuestions: [],
   currentIndex: 0,
   score: 0,
@@ -719,8 +721,16 @@ addQuestionBtn.addEventListener("click", addNewQuestion);
 assistBtn.addEventListener("click", provideSmartHint);
 readBtn.addEventListener("click", readCurrentContent);
 stopAudioBtn.addEventListener("click", stopSpeech);
-applyTargetBtn?.addEventListener("click", () => applyTargetSelection());
+applyTargetBtn?.addEventListener("click", () => {
+  applyTargetSelection(undefined, { name: fastestNameInput?.value || "" });
+});
 randomTargetBtn?.addEventListener("click", applyRandomTarget);
+fastestNameInput?.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    applyTargetSelection(undefined, { name: fastestNameInput.value });
+  }
+});
 fullscreenBtn.addEventListener("click", async () => {
   if (!document.fullscreenElement) {
     await document.documentElement.requestFullscreen();
@@ -1237,7 +1247,7 @@ function startGame() {
   const inputName = playerNameInput.value.trim();
   gameState.playerName = inputName || "حصة اللغة العربية";
   gameState.currentIndex = 0;
-  gameState.currentTeamIndex = 0;
+  gameState.currentTeamIndex = -1;
   gameState.score = 0;
   gameState.correctAnswers = 0;
   gameState.categoryStats = {};
@@ -1266,7 +1276,6 @@ function startGame() {
 
   scoreCaption.textContent = gameState.competitionMode === "students" ? "نقاط الطالب" : "نقاط الفريق";
   renderTargetOptions();
-  applyTargetSelection(0, { announce: false });
   renderTeamsBoard();
   showScreen("game");
   renderQuestion();
@@ -1305,40 +1314,83 @@ function buildStudents() {
 }
 
 function getCurrentTeam() {
-  if (!gameState.teams.length) {
+  if (!gameState.teams.length || gameState.currentTeamIndex < 0 || gameState.currentTeamIndex >= gameState.teams.length) {
     return {
-      name: gameState.competitionMode === "students" ? "الطالب الحالي" : "الفريق الحالي",
+      name: "بانتظار الأسرع",
       score: 0,
       correct: 0
     };
   }
 
-  if (gameState.currentTeamIndex < 0 || gameState.currentTeamIndex >= gameState.teams.length) {
-    gameState.currentTeamIndex = 0;
-  }
-
   return gameState.teams[gameState.currentTeamIndex];
 }
 
-function renderTargetOptions() {
-  if (!targetSelect) return;
+function setAnswerButtonsEnabled(enabled) {
+  Array.from(document.querySelectorAll(".answer-btn")).forEach((button) => {
+    button.disabled = gameState.answered ? true : !enabled;
+  });
+}
 
-  if (!gameState.teams.length) {
-    targetSelect.innerHTML = "";
+function ensureParticipantExists(name) {
+  const normalizedName = (name || "").trim();
+  if (!normalizedName) return -1;
+
+  const existingIndex = gameState.teams.findIndex(
+    (participant) => participant.name.trim().toLowerCase() === normalizedName.toLowerCase()
+  );
+
+  if (existingIndex !== -1) {
+    return existingIndex;
+  }
+
+  gameState.teams.push({
+    name: normalizedName,
+    score: 0,
+    correct: 0
+  });
+
+  renderTargetOptions();
+  renderTeamsBoard();
+  return gameState.teams.length - 1;
+}
+
+function renderTargetOptions() {
+  if (targetSelect) {
+    targetSelect.innerHTML = gameState.teams
+      .map((participant, index) => `<option value="${index}">${participant.name}</option>`)
+      .join("");
+    targetSelect.value = gameState.currentTeamIndex >= 0 ? String(gameState.currentTeamIndex) : "";
+  }
+
+  if (participantsList) {
+    participantsList.innerHTML = gameState.teams
+      .map((participant) => `<option value="${escapeHtml(participant.name)}"></option>`)
+      .join("");
+  }
+}
+
+function applyTargetSelection(index, options = {}) {
+  const { announce = true, name = "" } = options;
+  let safeIndex = Number.isInteger(index) ? Math.min(Math.max(index, 0), gameState.teams.length - 1) : -1;
+
+  const typedName = (name || fastestNameInput?.value || "").trim();
+  if (typedName) {
+    safeIndex = ensureParticipantExists(typedName);
+  } else if (typeof index !== "number" && targetSelect && targetSelect.value !== "") {
+    safeIndex = Number(targetSelect.value);
+  }
+
+  if (!gameState.teams.length || safeIndex < 0 || safeIndex >= gameState.teams.length) {
+    const { singular } = getCompetitionNouns();
+    if (directorNote && announce) {
+      directorNote.textContent = `اكتب اسم ${singular} الأسرع أو اضغط على اسمه أولًا ليُحتسب له السؤال.`;
+    }
+    playerLabel.textContent = "بانتظار الأسرع";
+    scoreLabel.textContent = "—";
+    setAnswerButtonsEnabled(false);
     return;
   }
 
-  targetSelect.innerHTML = gameState.teams
-    .map((participant, index) => `<option value="${index}">${participant.name}</option>`)
-    .join("");
-  targetSelect.value = String(gameState.currentTeamIndex);
-}
-
-function applyTargetSelection(index = Number(targetSelect?.value || 0), options = {}) {
-  if (!gameState.teams.length) return;
-
-  const { announce = true } = options;
-  const safeIndex = Number.isInteger(index) ? Math.min(Math.max(index, 0), gameState.teams.length - 1) : 0;
   gameState.currentTeamIndex = safeIndex;
 
   if (targetSelect) {
@@ -1346,12 +1398,16 @@ function applyTargetSelection(index = Number(targetSelect?.value || 0), options 
   }
 
   const currentTeam = getCurrentTeam();
+  if (fastestNameInput) {
+    fastestNameInput.value = currentTeam.name;
+  }
+
   playerLabel.textContent = currentTeam.name;
   scoreLabel.textContent = String(currentTeam.score);
   renderTeamsBoard();
 
   if (directorNote && announce) {
-    directorNote.textContent = `تم توجيه السؤال الحالي إلى ${currentTeam.name}.`;
+    directorNote.textContent = `تم تسجيل ${currentTeam.name} كأسرع مجيب لهذا السؤال.`;
   }
 
   if (!gameState.answered && gameState.selectedQuestions.length) {
@@ -1360,6 +1416,8 @@ function applyTargetSelection(index = Number(targetSelect?.value || 0), options 
       gameState.lastNarration = buildQuestionNarration(currentQuestion, currentTeam.name);
     }
   }
+
+  setAnswerButtonsEnabled(true);
 }
 
 function applyRandomTarget() {
@@ -1369,7 +1427,7 @@ function applyRandomTarget() {
   applyTargetSelection(randomIndex);
 
   if (directorNote) {
-    directorNote.textContent = `تم اختيار ${getCurrentTeam().name} عشوائيًا للإجابة.`;
+    directorNote.textContent = `تم تسجيل ${getCurrentTeam().name} كأسرع مجيب بشكل عشوائي.`;
   }
 }
 
@@ -1398,6 +1456,7 @@ function renderQuestion() {
   stopSpeech();
   gameState.answered = false;
   gameState.assistUsed = false;
+  gameState.currentTeamIndex = -1;
   gameState.timer = TIME_PER_QUESTION;
   timerLabel.textContent = String(TIME_PER_QUESTION);
   nextBtn.classList.add("hidden");
@@ -1407,26 +1466,28 @@ function renderQuestion() {
   readBtn.disabled = !speechSupported;
   stopAudioBtn.disabled = !speechSupported;
   readBtn.textContent = "استمع للسؤال";
+  if (fastestNameInput) {
+    fastestNameInput.value = "";
+  }
   assistantText.textContent = speechSupported
-    ? "يمكنك طلب تلميح ذكي أو الاستماع إلى السؤال والشرح صوتيًا أثناء المنافسة."
-    : "يمكنك طلب تلميح ذكي، بينما قد لا يدعم هذا المتصفح ميزة القراءة الصوتية.";
+    ? "السؤال الآن ظاهر للجميع. سجّل اسم الأسرع أولًا ثم اختر الإجابة لحساب النقاط له."
+    : "السؤال الآن ظاهر للجميع. سجّل اسم الأسرع أولًا ثم اختر الإجابة لحساب النقاط له.";
 
   const question = gameState.selectedQuestions[gameState.currentIndex];
   renderTargetOptions();
-  const currentTeam = getCurrentTeam();
 
-  playerLabel.textContent = currentTeam.name;
-  scoreLabel.textContent = String(currentTeam.score);
+  playerLabel.textContent = "بانتظار الأسرع";
+  scoreLabel.textContent = "—";
   progressLabel.textContent = `${gameState.currentIndex + 1} / ${gameState.selectedQuestions.length}`;
   progressBar.style.width = `${((gameState.currentIndex + 1) / gameState.selectedQuestions.length) * 100}%`;
   categoryTag.textContent = question.category;
 
   if (directorNote) {
     const { singular } = getCompetitionNouns();
-    directorNote.textContent = `السؤال الحالي موجّه إلى ${currentTeam.name}. يمكنك تحويله إلى ${singular} آخر إذا رغبت.`;
+    directorNote.textContent = `السؤال نفسه ظاهر للجميع. سجّل اسم ${singular} الأسرع أو اضغط على اسمه في اللوحة ثم اختر الإجابة.`;
   }
   questionText.textContent = question.prompt;
-  gameState.lastNarration = buildQuestionNarration(question, currentTeam.name);
+  gameState.lastNarration = buildQuestionNarration(question);
   renderTeamsBoard();
 
   answersContainer.innerHTML = "";
@@ -1435,9 +1496,12 @@ function renderQuestion() {
     button.type = "button";
     button.className = "answer-btn";
     button.textContent = option;
+    button.disabled = true;
     button.addEventListener("click", () => lockAnswer(index));
     answersContainer.appendChild(button);
   });
+
+  setAnswerButtonsEnabled(false);
 
   gameState.timerId = setInterval(() => {
     gameState.timer -= 1;
@@ -1584,18 +1648,22 @@ function readCurrentContent() {
   if (!gameState.lastNarration) return;
 
   assistantText.textContent = gameState.answered
-    ? "المساعد الذكي: تتم الآن قراءة الشرح الصوتي للفريق."
-    : "المساعد الذكي: تتم الآن قراءة السؤال والخيارات صوتيًا.";
+    ? "المساعد الذكي: تتم الآن قراءة الشرح الصوتي للمشارك الأسرع."
+    : "المساعد الذكي: تتم الآن قراءة السؤال والخيارات للجميع صوتيًا.";
 
   speakText(gameState.lastNarration);
 }
 
-function buildQuestionNarration(question, teamName) {
+function buildQuestionNarration(question, teamName = "") {
   const optionsText = question.options
     .map((option, index) => `الخيار ${OPTION_LABELS[index]}: ${option}`)
     .join(". ");
 
-  return `دور ${teamName}. ${question.prompt}. ${optionsText}`;
+  const intro = teamName
+    ? `السؤال مطروح للجميع، وتم تسجيل ${teamName} كأسرع مجيب.`
+    : "السؤال نفسه مطروح الآن على الجميع، وستُحتسب النقاط للأسرع.";
+
+  return `${intro} ${question.prompt}. ${optionsText}`;
 }
 
 function buildExpandedExplanation(question) {
@@ -1669,11 +1737,22 @@ function generateSmartHint(question) {
 
 function lockAnswer(selectedIndex) {
   if (gameState.answered) return;
+
+  if (selectedIndex !== -1 && (gameState.currentTeamIndex < 0 || gameState.currentTeamIndex >= gameState.teams.length)) {
+    const { singular } = getCompetitionNouns();
+    if (directorNote) {
+      directorNote.textContent = `سجّل اسم ${singular} الأسرع أولًا ثم اختر الإجابة ليُحتسب له الرصيد.`;
+    }
+    assistantText.textContent = `المساعد الذكي: اكتب اسم ${singular} الأسرع أو اضغط على اسمه أولًا.`;
+    return;
+  }
+
   gameState.answered = true;
   clearInterval(gameState.timerId);
 
   const question = gameState.selectedQuestions[gameState.currentIndex];
   const currentTeam = getCurrentTeam();
+  const responderName = gameState.currentTeamIndex >= 0 ? currentTeam.name : "الجميع";
   const buttons = Array.from(document.querySelectorAll(".answer-btn"));
   const isCorrect = selectedIndex === question.correctIndex;
 
@@ -1696,7 +1775,7 @@ function lockAnswer(selectedIndex) {
   let message = "";
   if (selectedIndex === -1) {
     feedbackBox.className = "feedback warning";
-    message = `${currentTeam.name}: انتهى الوقت. الإجابة الصحيحة هي <strong>${question.options[question.correctIndex]}</strong><br><strong>الشرح:</strong> ${question.explanation}<br><strong>توسيع الفكرة:</strong> ${expandedExplanation}`;
+    message = `${responderName}: انتهى الوقت على الجميع. الإجابة الصحيحة هي <strong>${question.options[question.correctIndex]}</strong><br><strong>الشرح:</strong> ${question.explanation}<br><strong>توسيع الفكرة:</strong> ${expandedExplanation}`;
     playFailSound();
   } else if (isCorrect) {
     const earnedPoints = 10;
@@ -1707,21 +1786,23 @@ function lockAnswer(selectedIndex) {
     gameState.categoryStats[question.category].correct += 1;
     scoreLabel.textContent = String(currentTeam.score);
     feedbackBox.className = "feedback success";
-    message = `${currentTeam.name}: إجابة صحيحة ✅ أضيفت <strong>10</strong> نقاط إلى رصيده.<br><strong>الشرح:</strong> ${question.explanation}<br><strong>توسيع الفكرة:</strong> ${expandedExplanation}`;
+    message = `${currentTeam.name}: كان الأسرع وأجاب إجابة صحيحة ✅ أضيفت <strong>10</strong> نقاط إلى رصيده.<br><strong>الشرح:</strong> ${question.explanation}<br><strong>توسيع الفكرة:</strong> ${expandedExplanation}`;
     playSuccessSound();
   } else {
     feedbackBox.className = "feedback error";
-    message = `${currentTeam.name}: إجابة غير صحيحة ❌ الصحيح هو <strong>${question.options[question.correctIndex]}</strong><br><strong>الشرح:</strong> ${question.explanation}<br><strong>توسيع الفكرة:</strong> ${expandedExplanation}`;
+    message = `${currentTeam.name}: كان الأسرع لكن الإجابة غير صحيحة ❌ الصحيح هو <strong>${question.options[question.correctIndex]}</strong><br><strong>الشرح:</strong> ${question.explanation}<br><strong>توسيع الفكرة:</strong> ${expandedExplanation}`;
     playFailSound();
   }
 
   assistBtn.disabled = true;
   readBtn.disabled = !speechSupported;
   readBtn.textContent = "استمع للشرح";
-  gameState.lastNarration = buildExplanationNarration(question, isCorrect, currentTeam.name);
-  assistantText.textContent = isCorrect
-    ? `المساعد الذكي: أحسنتم. ${question.explanation} ${expandedExplanation}`
-    : `المساعد الذكي: انتبهوا إلى سبب صحة الإجابة. ${question.explanation} ${expandedExplanation}`;
+  gameState.lastNarration = buildExplanationNarration(question, isCorrect, responderName);
+  assistantText.textContent = selectedIndex === -1
+    ? `المساعد الذكي: انتهى الوقت على الجميع. ${question.explanation} ${expandedExplanation}`
+    : isCorrect
+      ? `المساعد الذكي: أحسن ${currentTeam.name} لأنه كان الأسرع. ${question.explanation} ${expandedExplanation}`
+      : `المساعد الذكي: ${currentTeam.name} كان الأسرع لكن يحتاج إلى مراجعة السبب. ${question.explanation} ${expandedExplanation}`;
 
   renderTeamsBoard();
   feedbackBox.innerHTML = message;
@@ -1843,13 +1924,24 @@ function renderTeamsBoard() {
   teamsBoard.innerHTML = gameState.teams
     .map(
       (team, index) => `
-        <div class="team-chip ${index === gameState.currentTeamIndex ? "active" : ""}">
+        <div class="team-chip ${index === gameState.currentTeamIndex ? "active" : ""}" data-index="${index}" role="button" tabindex="0" aria-label="اختيار ${team.name} باعتباره الأسرع">
           <strong>${team.name}</strong>
           <span>${team.score} نقطة</span>
         </div>
       `
     )
     .join("");
+
+  Array.from(teamsBoard.querySelectorAll(".team-chip")).forEach((chip) => {
+    const chipIndex = Number(chip.dataset.index);
+    chip.addEventListener("click", () => applyTargetSelection(chipIndex));
+    chip.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        applyTargetSelection(chipIndex);
+      }
+    });
+  });
 }
 
 function saveLeaderboard(entry) {
