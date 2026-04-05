@@ -578,6 +578,8 @@ const participantsList = document.getElementById("participants-list");
 const buzzInBtn = document.getElementById("buzz-in-btn");
 const applyTargetBtn = document.getElementById("apply-target-btn");
 const randomTargetBtn = document.getElementById("random-target-btn");
+const buzzLockBanner = document.getElementById("buzz-lock-banner");
+const directorPanel = document.querySelector(".director-panel");
 const directorNote = document.getElementById("director-note");
 const connectionBanner = document.getElementById("connection-banner");
 const installSplash = document.getElementById("install-splash");
@@ -640,6 +642,7 @@ const gameState = {
   timer: TIME_PER_QUESTION,
   timerId: null,
   answered: false,
+  buzzLocked: false,
   assistUsed: false,
   lastNarration: "",
   winnerAnnouncement: "",
@@ -726,7 +729,7 @@ buzzInBtn?.addEventListener("click", () => {
   applyTargetSelection(undefined, { name: fastestNameInput?.value || "", buzz: true });
 });
 applyTargetBtn?.addEventListener("click", () => {
-  applyTargetSelection(undefined, { name: fastestNameInput?.value || "" });
+  applyTargetSelection(undefined, { name: fastestNameInput?.value || "", buzz: true });
 });
 randomTargetBtn?.addEventListener("click", applyRandomTarget);
 fastestNameInput?.addEventListener("keydown", (event) => {
@@ -1331,8 +1334,43 @@ function getCurrentTeam() {
 
 function setAnswerButtonsEnabled(enabled) {
   Array.from(document.querySelectorAll(".answer-btn")).forEach((button) => {
-    button.disabled = gameState.answered ? true : !enabled;
+    button.disabled = gameState.answered ? true : !(enabled && gameState.buzzLocked);
   });
+}
+
+function updateBuzzLockUI() {
+  const locked = gameState.buzzLocked && gameState.currentTeamIndex >= 0 && gameState.currentTeamIndex < gameState.teams.length;
+  const lockedName = locked ? getCurrentTeam().name : "";
+
+  if (buzzInBtn) {
+    buzzInBtn.disabled = locked || gameState.answered;
+    buzzInBtn.classList.toggle("locked", locked || gameState.answered);
+    buzzInBtn.textContent = locked ? `🔒 ${lockedName}` : "🔔 Buzz In";
+  }
+
+  if (applyTargetBtn) {
+    applyTargetBtn.disabled = locked || gameState.answered;
+  }
+
+  if (randomTargetBtn) {
+    randomTargetBtn.disabled = locked || gameState.answered;
+  }
+
+  if (fastestNameInput) {
+    fastestNameInput.readOnly = locked || gameState.answered;
+    fastestNameInput.classList.toggle("locked", locked || gameState.answered);
+  }
+
+  if (buzzLockBanner) {
+    buzzLockBanner.classList.toggle("locked", locked);
+    buzzLockBanner.textContent = locked
+      ? `🔒 تم قفل الجرس لأول ضاغط: ${lockedName}`
+      : "🔔 الجرس مفتوح الآن — أول ضاغط سيُقفل السؤال لهذا الدور.";
+  }
+
+  if (directorPanel) {
+    directorPanel.classList.toggle("buzz-locked", locked);
+  }
 }
 
 function ensureParticipantExists(name) {
@@ -1392,10 +1430,26 @@ function applyTargetSelection(index, options = {}) {
     playerLabel.textContent = "بانتظار الأسرع";
     scoreLabel.textContent = "—";
     setAnswerButtonsEnabled(false);
+    updateBuzzLockUI();
+    return;
+  }
+
+  if (gameState.buzzLocked) {
+    const lockedTeam = getCurrentTeam();
+    if (directorNote && announce) {
+      directorNote.textContent = `🔒 الجرس مقفول بالفعل لأول ضاغط: ${lockedTeam.name}`;
+    }
+    assistantText.textContent = `المساعد الذكي: تم قفل الجرس بالفعل لـ ${lockedTeam.name}. انتقلوا الآن إلى الإجابة.`;
+    updateBuzzLockUI();
     return;
   }
 
   gameState.currentTeamIndex = safeIndex;
+
+  if (buzz && !gameState.answered) {
+    gameState.buzzLocked = true;
+    playBuzzInSound();
+  }
 
   if (targetSelect) {
     targetSelect.value = String(safeIndex);
@@ -1409,15 +1463,12 @@ function applyTargetSelection(index, options = {}) {
   playerLabel.textContent = currentTeam.name;
   scoreLabel.textContent = String(currentTeam.score);
   renderTeamsBoard();
+  updateBuzzLockUI();
 
   if (directorNote && announce) {
     directorNote.textContent = buzz
-      ? `🔔 رنّ الجرس أولًا: ${currentTeam.name}`
+      ? `🔒 تم قفل الجرس الآن لـ ${currentTeam.name}`
       : `تم تسجيل ${currentTeam.name} كأسرع مجيب لهذا السؤال.`;
-  }
-
-  if (buzz && !gameState.answered) {
-    playBuzzInSound();
   }
 
   if (!gameState.answered && gameState.selectedQuestions.length) {
@@ -1434,14 +1485,10 @@ function applyRandomTarget() {
   if (!gameState.teams.length) return;
 
   const randomIndex = Math.floor(Math.random() * gameState.teams.length);
-  applyTargetSelection(randomIndex);
+  applyTargetSelection(randomIndex, { buzz: true });
 
-  if (directorNote) {
-    directorNote.textContent = `تم تسجيل ${getCurrentTeam().name} كأسرع مجيب بشكل عشوائي.`;
-  }
-
-  if (!gameState.answered) {
-    playBuzzInSound();
+  if (directorNote && gameState.currentTeamIndex >= 0) {
+    directorNote.textContent = `🔒 تم قفل الجرس عشوائيًا لـ ${getCurrentTeam().name}.`;
   }
 }
 
@@ -1470,6 +1517,7 @@ function renderQuestion() {
   stopSpeech();
   gameState.answered = false;
   gameState.assistUsed = false;
+  gameState.buzzLocked = false;
   gameState.currentTeamIndex = -1;
   gameState.timer = TIME_PER_QUESTION;
   timerLabel.textContent = String(TIME_PER_QUESTION);
@@ -1483,6 +1531,7 @@ function renderQuestion() {
   if (fastestNameInput) {
     fastestNameInput.value = "";
   }
+  updateBuzzLockUI();
   assistantText.textContent = speechSupported
     ? "السؤال الآن ظاهر للجميع. سجّل اسم الأسرع أولًا ثم اختر الإجابة لحساب النقاط له."
     : "السؤال الآن ظاهر للجميع. سجّل اسم الأسرع أولًا ثم اختر الإجابة لحساب النقاط له.";
@@ -1814,6 +1863,8 @@ function lockAnswer(selectedIndex) {
   }
 
   assistBtn.disabled = true;
+  gameState.buzzLocked = true;
+  updateBuzzLockUI();
   readBtn.disabled = !speechSupported;
   readBtn.textContent = "استمع للشرح";
   gameState.lastNarration = buildExplanationNarration(question, isCorrect, responderName);
