@@ -23,6 +23,10 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   font-family: "Cairo", sans-serif;
@@ -32,6 +36,8 @@ body {
   min-height: 100dvh;
   position: relative;
   overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body::before,
@@ -238,6 +244,11 @@ select {
   z-index: 2;
 }
 
+main {
+  display: grid;
+  gap: 12px;
+}
+
 .hero {
   display: flex;
   justify-content: space-between;
@@ -418,6 +429,8 @@ select {
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 24px;
   padding: 18px;
+  box-shadow: 0 18px 34px rgba(13, 37, 58, 0.12);
+  overflow: hidden;
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
 }
@@ -1513,13 +1526,22 @@ select option {
 }
 
 @media (max-width: 820px) {
+  body {
+    background-attachment: fixed;
+  }
+
   .page-corner {
     display: none;
   }
 
   .app-shell {
     width: min(100%, 100vw);
+    max-width: 560px;
     padding: 12px 10px calc(18px + env(safe-area-inset-bottom));
+  }
+
+  main {
+    gap: 10px;
   }
 
   .hero,
@@ -1560,6 +1582,15 @@ select option {
 
   .hud {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    position: sticky;
+    top: 8px;
+    z-index: 6;
+    padding: 8px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 12px 26px rgba(13, 37, 58, 0.16);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
   }
 
   .welcome-meta,
@@ -1591,6 +1622,7 @@ select option {
   .hero-game-logo-wrap {
     width: 100%;
     padding: 10px 12px;
+    border-radius: 22px;
   }
 
   .hero-game-logo {
@@ -1682,6 +1714,11 @@ select option {
 
   .confirm-dialog {
     padding: 18px 14px;
+  }
+
+  .question-card,
+  .result-card {
+    border-radius: 18px;
   }
 }
 
