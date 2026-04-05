@@ -575,6 +575,7 @@ const scoreCaption = document.getElementById("score-caption");
 const targetSelect = document.getElementById("target-select");
 const fastestNameInput = document.getElementById("fastest-name-input");
 const participantsList = document.getElementById("participants-list");
+const buzzInBtn = document.getElementById("buzz-in-btn");
 const applyTargetBtn = document.getElementById("apply-target-btn");
 const randomTargetBtn = document.getElementById("random-target-btn");
 const directorNote = document.getElementById("director-note");
@@ -721,6 +722,9 @@ addQuestionBtn.addEventListener("click", addNewQuestion);
 assistBtn.addEventListener("click", provideSmartHint);
 readBtn.addEventListener("click", readCurrentContent);
 stopAudioBtn.addEventListener("click", stopSpeech);
+buzzInBtn?.addEventListener("click", () => {
+  applyTargetSelection(undefined, { name: fastestNameInput?.value || "", buzz: true });
+});
 applyTargetBtn?.addEventListener("click", () => {
   applyTargetSelection(undefined, { name: fastestNameInput?.value || "" });
 });
@@ -728,7 +732,7 @@ randomTargetBtn?.addEventListener("click", applyRandomTarget);
 fastestNameInput?.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
     event.preventDefault();
-    applyTargetSelection(undefined, { name: fastestNameInput.value });
+    applyTargetSelection(undefined, { name: fastestNameInput.value, buzz: true });
   }
 });
 fullscreenBtn.addEventListener("click", async () => {
@@ -1370,7 +1374,7 @@ function renderTargetOptions() {
 }
 
 function applyTargetSelection(index, options = {}) {
-  const { announce = true, name = "" } = options;
+  const { announce = true, name = "", buzz = false } = options;
   let safeIndex = Number.isInteger(index) ? Math.min(Math.max(index, 0), gameState.teams.length - 1) : -1;
 
   const typedName = (name || fastestNameInput?.value || "").trim();
@@ -1407,7 +1411,13 @@ function applyTargetSelection(index, options = {}) {
   renderTeamsBoard();
 
   if (directorNote && announce) {
-    directorNote.textContent = `تم تسجيل ${currentTeam.name} كأسرع مجيب لهذا السؤال.`;
+    directorNote.textContent = buzz
+      ? `🔔 رنّ الجرس أولًا: ${currentTeam.name}`
+      : `تم تسجيل ${currentTeam.name} كأسرع مجيب لهذا السؤال.`;
+  }
+
+  if (buzz && !gameState.answered) {
+    playBuzzInSound();
   }
 
   if (!gameState.answered && gameState.selectedQuestions.length) {
@@ -1428,6 +1438,10 @@ function applyRandomTarget() {
 
   if (directorNote) {
     directorNote.textContent = `تم تسجيل ${getCurrentTeam().name} كأسرع مجيب بشكل عشوائي.`;
+  }
+
+  if (!gameState.answered) {
+    playBuzzInSound();
   }
 }
 
@@ -1537,6 +1551,11 @@ function playTone(frequency, duration, type = "sine", volume = 0.03) {
 function playSuccessSound() {
   playTone(660, 0.12, "triangle", 0.035);
   setTimeout(() => playTone(880, 0.16, "triangle", 0.035), 120);
+}
+
+function playBuzzInSound() {
+  playTone(740, 0.08, "square", 0.03);
+  setTimeout(() => playTone(988, 0.09, "square", 0.03), 85);
 }
 
 function playApplauseSound() {
@@ -1934,11 +1953,11 @@ function renderTeamsBoard() {
 
   Array.from(teamsBoard.querySelectorAll(".team-chip")).forEach((chip) => {
     const chipIndex = Number(chip.dataset.index);
-    chip.addEventListener("click", () => applyTargetSelection(chipIndex));
+    chip.addEventListener("click", () => applyTargetSelection(chipIndex, { buzz: true }));
     chip.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        applyTargetSelection(chipIndex);
+        applyTargetSelection(chipIndex, { buzz: true });
       }
     });
   });

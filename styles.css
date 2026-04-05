@@ -924,6 +924,16 @@ select option {
   gap: 8px;
 }
 
+.buzz-btn {
+  min-width: 150px;
+  box-shadow: 0 14px 30px rgba(245, 158, 11, 0.28);
+  animation: buzzPulse 1.8s ease-in-out infinite;
+}
+
+.buzz-btn:hover {
+  filter: saturate(1.08) brightness(1.04);
+}
+
 .director-note {
   grid-column: 1 / -1;
   margin: 0;
@@ -1887,6 +1897,17 @@ select option {
 
   .action-row {
     justify-content: center;
+  }
+}
+
+@keyframes buzzPulse {
+  0%, 100% {
+    transform: translateY(0);
+    box-shadow: 0 14px 30px rgba(245, 158, 11, 0.22);
+  }
+  50% {
+    transform: translateY(-1px) scale(1.015);
+    box-shadow: 0 18px 34px rgba(245, 158, 11, 0.32);
   }
 }
 
