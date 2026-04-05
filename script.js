@@ -1225,8 +1225,8 @@ function populateStudentNames(count = DEFAULT_STUDENT_COUNT, forceReset = false)
         .map((name) => name.trim())
         .filter(Boolean);
 
-  const names = Array.from({ length: safeCount }, (_, index) => existingNames[index] || `الطالب ${index + 1}`);
-  studentNamesInput.value = names.join("\n");
+  const names = Array.from({ length: safeCount }, (_, index) => existingNames[index] || "");
+  studentNamesInput.value = names.join("\n").trimEnd();
 
   if (studentCountSelect) {
     studentCountSelect.value = String(safeCount);
@@ -1244,9 +1244,6 @@ function updateTeamCount(count) {
     const shouldShow = index < count;
     wrapper.classList.toggle("hidden", !shouldShow);
     input.disabled = !shouldShow;
-    if (!input.value.trim()) {
-      input.value = TEAM_LABELS[index];
-    }
   });
 }
 
@@ -1308,10 +1305,6 @@ function buildStudents() {
     .filter(Boolean);
 
   const names = Array.from({ length: desiredCount }, (_, index) => enteredNames[index] || `الطالب ${index + 1}`);
-
-  if (studentNamesInput) {
-    studentNamesInput.value = names.join("\n");
-  }
 
   return names.map((name) => ({
     name,
