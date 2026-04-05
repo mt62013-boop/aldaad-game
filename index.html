@@ -115,7 +115,7 @@
         <div class="panel-grid minimal-start-grid">
           <div class="start-core">
             <h2>ابدأ الجولة</h2>
-            <p class="start-screen-note">يمكن لكل طالب أو فريق تسجيل اسمه، والسؤال نفسه يُعرض للجميع ثم تُحتسب النقاط للأسرع في الإجابة الصحيحة.</p>
+            <p class="start-screen-note">يمكنك الآن الاختيار بين `فريقين فقط` أو `طالب واحد`، مع توجيه نفس أسئلة الجلسة للمشاركين داخل الجولة نفسها.</p>
             <div class="field-group">
               <label for="player-name">اسم الحصة أو الصف</label>
               <input id="player-name" type="text" placeholder="مثال: 12 أدبي - الشعبة أ" maxlength="30" />
@@ -162,19 +162,18 @@
             <div class="field-group">
               <label>نوع المشاركة</label>
               <div class="competition-mode-picker">
-                <button class="competition-mode-btn active" data-competition="teams" type="button">بين الفرق</button>
-                <button class="competition-mode-btn" data-competition="students" type="button">طلاب أفراد</button>
+                <button class="competition-mode-btn active" data-competition="teams" type="button">فريقان فقط</button>
+                <button class="competition-mode-btn" data-competition="students" type="button">طالب واحد</button>
               </div>
             </div>
 
             <div id="team-setup-section" class="participant-setup-section">
               <div class="field-group">
-                <label>عدد الفرق</label>
+                <label>وضع الفرق</label>
                 <div class="team-count-picker">
-                  <button class="team-count-btn active" data-count="2" type="button">فريقان</button>
-                  <button class="team-count-btn" data-count="3" type="button">3 فرق</button>
-                  <button class="team-count-btn" data-count="4" type="button">4 فرق</button>
+                  <button class="team-count-btn active" data-count="2" type="button">فريقان فقط</button>
                 </div>
+                <p class="branding-note">تم تثبيت هذا الوضع على فريقين فقط لتبسيط التفاعل داخل الحصة.</p>
                 <div id="team-inputs" class="team-inputs-grid">
                   <div class="team-input-wrap">
                     <label for="team-1">اسم الفريق الأول</label>
@@ -184,38 +183,22 @@
                     <label for="team-2">اسم الفريق الثاني</label>
                     <input id="team-2" class="team-name-input" type="text" value="الفريق الثاني" maxlength="25" />
                   </div>
-                  <div class="team-input-wrap hidden">
-                    <label for="team-3">اسم الفريق الثالث</label>
-                    <input id="team-3" class="team-name-input" type="text" value="الفريق الثالث" maxlength="25" />
-                  </div>
-                  <div class="team-input-wrap hidden">
-                    <label for="team-4">اسم الفريق الرابع</label>
-                    <input id="team-4" class="team-name-input" type="text" value="الفريق الرابع" maxlength="25" />
-                  </div>
                 </div>
               </div>
             </div>
 
             <div id="student-setup-section" class="participant-setup-section hidden">
-              <div class="field-group">
+              <div class="field-group hidden">
                 <label for="student-count">عدد الطلاب المشاركين</label>
                 <select id="student-count">
-                  <option value="5">5 طلاب</option>
-                  <option value="10" selected>10 طلاب</option>
-                  <option value="15">15 طالبًا</option>
-                  <option value="20">20 طالبًا</option>
-                  <option value="25">25 طالبًا</option>
-                  <option value="30">30 طالبًا</option>
+                  <option value="1" selected>طالب واحد</option>
                 </select>
               </div>
               <div class="field-group">
-                <label for="student-names">أسماء الطلاب (اسم واحد في كل سطر)</label>
-                <textarea id="student-names" placeholder="الطالب 1&#10;الطالب 2&#10;الطالب 3"></textarea>
+                <label for="student-names">اسم الطالب</label>
+                <textarea id="student-names" rows="2" placeholder="اكتب اسم الطالب هنا"></textarea>
               </div>
-              <div class="branding-actions">
-                <button id="fill-students-btn" class="secondary-btn" type="button">تعبئة أسماء افتراضية</button>
-              </div>
-              <p class="branding-note">يمكن لمدير اللعبة إدخال حتى 30 طالبًا، وسيظهر كل طالب كمشارك مستقل يمكن توجيه السؤال إليه مباشرة.</p>
+              <p class="branding-note">في هذا الوضع يشارك طالب واحد فقط في كل مرة، ويمكن تغيير الاسم للطالب التالي مع بقاء نفس أسئلة الجلسة.</p>
             </div>
 
             <div class="field-group">

@@ -599,8 +599,8 @@ const certificateScore = document.getElementById("certificate-score");
 
 const TEAM_LABELS = ["الفريق الأول", "الفريق الثاني", "الفريق الثالث", "الفريق الرابع"];
 const OPTION_LABELS = ["الأول", "الثاني", "الثالث", "الرابع"];
-const DEFAULT_STUDENT_COUNT = 10;
-const MAX_STUDENTS = 30;
+const DEFAULT_STUDENT_COUNT = 1;
+const MAX_STUDENTS = 1;
 const QUESTION_CATEGORIES = ["الفهم والاستيعاب", "فنون البلاغة", "السلامة اللغوية", "الثروة اللغوية"];
 const LESSON_OPTIONS = [
   { value: "all", label: "جميع الدروس" },
@@ -1494,8 +1494,8 @@ function applyRandomTarget() {
 
 function getCompetitionNouns() {
   return gameState.competitionMode === "students"
-    ? { singular: "الطالب", plural: "طلاب", boardTitle: "ترتيب الطلاب" }
-    : { singular: "الفريق", plural: "فرق", boardTitle: "ترتيب الفرق" };
+    ? { singular: "الطالب", plural: "طالب واحد", boardTitle: "نتيجة الطالب" }
+    : { singular: "الفريق", plural: "فريقين", boardTitle: "ترتيب الفريقين" };
 }
 
 function matchesMode(question) {
@@ -1532,22 +1532,23 @@ function renderQuestion() {
     fastestNameInput.value = "";
   }
   updateBuzzLockUI();
-  assistantText.textContent = speechSupported
-    ? "السؤال الآن ظاهر للجميع. سجّل اسم الأسرع أولًا ثم اختر الإجابة لحساب النقاط له."
-    : "السؤال الآن ظاهر للجميع. سجّل اسم الأسرع أولًا ثم اختر الإجابة لحساب النقاط له.";
+  assistantText.textContent = gameState.competitionMode === "students"
+    ? "هذا السؤال موجّه إلى طالب واحد في هذه الجولة، مع بقاء نفس أسئلة الجلسة عند تغيير الاسم لاحقًا."
+    : "السؤال الآن ظاهر للفريقين. سجّل اسم الأسرع أولًا ثم اختر الإجابة لحساب النقاط له.";
 
   const question = gameState.selectedQuestions[gameState.currentIndex];
   renderTargetOptions();
 
-  playerLabel.textContent = "بانتظار الأسرع";
-  scoreLabel.textContent = "—";
+  playerLabel.textContent = gameState.competitionMode === "students" ? "الطالب الحالي" : "بانتظار الأسرع";
+  scoreLabel.textContent = gameState.competitionMode === "students" && gameState.teams.length === 1 ? String(gameState.teams[0].score) : "—";
   progressLabel.textContent = `${gameState.currentIndex + 1} / ${gameState.selectedQuestions.length}`;
   progressBar.style.width = `${((gameState.currentIndex + 1) / gameState.selectedQuestions.length) * 100}%`;
   categoryTag.textContent = question.category;
 
   if (directorNote) {
-    const { singular } = getCompetitionNouns();
-    directorNote.textContent = `السؤال نفسه ظاهر للجميع. سجّل اسم ${singular} الأسرع أو اضغط على اسمه في اللوحة ثم اختر الإجابة.`;
+    directorNote.textContent = gameState.competitionMode === "students"
+      ? "هذا السؤال مخصص لطالب واحد في هذه الجولة، ويمكنك تغيير الاسم لاحقًا للطالب التالي بنفس أسئلة الجلسة."
+      : "السؤال نفسه ظاهر للفريقين. سجّل اسم الفريق الأسرع أو اضغط على اسمه في اللوحة ثم اختر الإجابة.";
   }
   questionText.textContent = question.prompt;
   gameState.lastNarration = buildQuestionNarration(question);
@@ -1565,6 +1566,19 @@ function renderQuestion() {
   });
 
   setAnswerButtonsEnabled(false);
+
+  if (gameState.competitionMode === "students" && gameState.teams.length === 1) {
+    gameState.currentTeamIndex = 0;
+    gameState.buzzLocked = true;
+    if (fastestNameInput) {
+      fastestNameInput.value = gameState.teams[0].name;
+    }
+    playerLabel.textContent = gameState.teams[0].name;
+    scoreLabel.textContent = String(gameState.teams[0].score);
+    gameState.lastNarration = buildQuestionNarration(question, gameState.teams[0].name);
+    updateBuzzLockUI();
+    setAnswerButtonsEnabled(true);
+  }
 
   gameState.timerId = setInterval(() => {
     gameState.timer -= 1;
@@ -1911,7 +1925,9 @@ function finishGame() {
   finalPercent.textContent = `${percent}%`;
 
   resultTitle.textContent = `${competitionNouns.singular} الفائز: ${winner.name}`;
-  resultSummary.textContent = `${gameState.playerName} انتهت بفوز ${winner.name} بعد منافسة بين ${gameState.teams.length} ${competitionNouns.plural}، بإجمالي ${gameState.score} نقطة و${gameState.correctAnswers} إجابات صحيحة من أصل ${totalQuestions}.`;
+  resultSummary.textContent = gameState.competitionMode === "students"
+    ? `${gameState.playerName} انتهت بجولة فردية للطالب ${winner.name}، بإجمالي ${gameState.score} نقطة و${gameState.correctAnswers} إجابات صحيحة من أصل ${totalQuestions}.`
+    : `${gameState.playerName} انتهت بفوز ${winner.name} بعد منافسة بين فريقين، بإجمالي ${gameState.score} نقطة و${gameState.correctAnswers} إجابات صحيحة من أصل ${totalQuestions}.`;
   recommendationText.textContent = buildRecommendation(percent, winner.name);
   const lessonTitle = DEFAULT_LESSON_TITLE;
   gameState.winnerAnnouncement = `مبارك لـ${competitionNouns.singular} الفائز: ${winner.name}. لقد حقق ${winner.score} نقطة في لعبة ${lessonTitle}. أحسنتم جميعًا.`;
@@ -1961,7 +1977,7 @@ function renderWinnerCertificate(winner, lessonTitle) {
 
 function buildRecommendation(percent, winnerName) {
   const bestCategory = getBestCategory();
-  const participantsLabel = gameState.competitionMode === "students" ? "الطلاب" : "الفرق";
+  const participantsLabel = gameState.competitionMode === "students" ? "الطالب" : "الفريقين";
 
   if (percent >= 85) {
     return `أداء الصف ممتاز جدًا، وتصدر ${winnerName} المنافسة. أقوى جانب ظاهر في الجولة هو: ${bestCategory}.`;
