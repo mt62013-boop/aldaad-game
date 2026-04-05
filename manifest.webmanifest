@@ -1,4 +1,5 @@
 {
+  "id": "./",
   "name": "الضاد | تعلم بمرح",
   "short_name": "الضاد",
   "description": "لعبة تعليمية عربية تفاعلية تعمل على الهاتف ويمكن تثبيتها كتطبيق.",
@@ -10,18 +11,27 @@
   "orientation": "portrait",
   "background_color": "#16324f",
   "theme_color": "#16324f",
+  "categories": ["education", "games"],
+  "shortcuts": [
+    {
+      "name": "ابدأ التحدي",
+      "short_name": "ابدأ",
+      "description": "افتح لعبة الضاد مباشرة",
+      "url": "./index.html"
+    }
+  ],
   "icons": [
     {
-      "src": "game-logo.svg",
-      "sizes": "any",
+      "src": "app-icon-192.svg",
+      "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "school-logo.svg",
-      "sizes": "any",
+      "src": "app-icon-512.svg",
+      "sizes": "512x512",
       "type": "image/svg+xml",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ]
 }

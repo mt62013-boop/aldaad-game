@@ -1,49 +1,89 @@
-const CACHE_NAME = "aldaad-pwa-v1";
-const APP_SHELL = [
+const STATIC_CACHE = "aldaad-static-v2";
+const DYNAMIC_CACHE = "aldaad-dynamic-v2";
+const CORE_ASSETS = [
   "./",
   "./index.html",
+  "./offline.html",
   "./styles.css",
   "./script.js",
   "./manifest.webmanifest",
   "./logo-logo.png",
   "./school-logo.png",
   "./game-logo.svg",
-  "./school-logo.svg"
+  "./school-logo.svg",
+  "./app-icon-192.svg",
+  "./app-icon-512.svg"
 ];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(APP_SHELL))
+    caches.open(STATIC_CACHE)
+      .then((cache) => cache.addAll(CORE_ASSETS))
       .then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => Promise.all(
-      keys
-        .filter((key) => key !== CACHE_NAME)
-        .map((key) => caches.delete(key))
-    )).then(() => self.clients.claim())
+    caches.keys()
+      .then((keys) => Promise.all(
+        keys
+          .filter((key) => ![STATIC_CACHE, DYNAMIC_CACHE].includes(key))
+          .map((key) => caches.delete(key))
+      ))
+      .then(() => self.clients.claim())
   );
 });
+
+async function networkFirst(request) {
+  try {
+    const response = await fetch(request);
+
+    if (response && response.ok) {
+      const cache = await caches.open(DYNAMIC_CACHE);
+      cache.put(request, response.clone());
+    }
+
+    return response;
+  } catch {
+    return (await caches.match(request)) || (await caches.match("./index.html")) || caches.match("./offline.html");
+  }
+}
+
+async function cacheFirst(request) {
+  const cachedResponse = await caches.match(request);
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+
+  try {
+    const response = await fetch(request);
+
+    if (response && response.ok) {
+      const cache = await caches.open(DYNAMIC_CACHE);
+      cache.put(request, response.clone());
+    }
+
+    return response;
+  } catch {
+    return caches.match("./offline.html");
+  }
+}
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") {
     return;
   }
 
+  const requestUrl = new URL(event.request.url);
+
   if (event.request.mode === "navigate") {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          const clonedResponse = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put("./index.html", clonedResponse));
-          return response;
-        })
-        .catch(() => caches.match("./index.html"))
-    );
+    event.respondWith(networkFirst(event.request));
+    return;
+  }
+
+  if (requestUrl.origin === self.location.origin) {
+    event.respondWith(cacheFirst(event.request));
     return;
   }
 
@@ -53,15 +93,15 @@ self.addEventListener("fetch", (event) => {
         return cachedResponse;
       }
 
-      return fetch(event.request).then((response) => {
-        if (!response || response.status !== 200 || response.type !== "basic") {
+      return fetch(event.request)
+        .then((response) => {
+          if (response && response.ok) {
+            const clonedResponse = response.clone();
+            caches.open(DYNAMIC_CACHE).then((cache) => cache.put(event.request, clonedResponse));
+          }
           return response;
-        }
-
-        const clonedResponse = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clonedResponse));
-        return response;
-      });
+        })
+        .catch(() => caches.match("./offline.html"));
     })
   );
 });

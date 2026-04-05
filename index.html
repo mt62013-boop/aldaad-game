@@ -7,8 +7,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="application-name" content="الضاد" />
+  <meta name="apple-mobile-web-app-title" content="الضاد" />
   <title>الضاد | تعلم بمرح</title>
   <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="app-icon-192.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="logo-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -20,6 +23,17 @@
   <span class="page-corner top-left"><span></span></span>
   <span class="page-corner bottom-right"><span></span></span>
   <span class="page-corner bottom-left"><span></span></span>
+
+  <div id="connection-banner" class="offline-indicator hidden" role="status" aria-live="polite"></div>
+
+  <div id="install-splash" class="install-splash hidden" aria-hidden="true">
+    <div class="install-splash-card">
+      <img src="logo-logo.png?v=3" alt="شعار لعبة الضاد" class="install-splash-logo" />
+      <span class="badge">نسخة التطبيق</span>
+      <strong>الضاد — تعلم بمرح</strong>
+      <p id="install-splash-message">جار تجهيز التجربة التفاعلية للعمل بسرعة حتى بدون إنترنت.</p>
+    </div>
+  </div>
 
   <div class="app-shell">
     <header class="hero">
@@ -128,7 +142,7 @@
             <details class="question-editor-panel">
               <summary>تعديل الأسئلة من داخل التطبيق</summary>
               <p class="question-editor-help">
-                يمكنك تعديل الأسئلة لتناسب أي موضوع، مع الإبقاء على التصنيفات: `فهم واستيعاب` أو `مفردات ودلالات` أو `تحليل`.
+                يمكنك تعديل الأسئلة لتناسب أي موضوع، مع الإبقاء على التصنيفات: `الفهم والاستيعاب` أو `فنون البلاغة` أو `السلامة اللغوية` أو `الثروة اللغوية`.
               </p>
               <div id="question-editor-list" class="question-editor-list"></div>
               <div class="question-editor-toolbar">
@@ -140,46 +154,85 @@
             </details>
 
             <div class="field-group">
-              <label>عدد الفرق</label>
-              <div class="team-count-picker">
-                <button class="team-count-btn active" data-count="2" type="button">فريقان</button>
-                <button class="team-count-btn" data-count="3" type="button">3 فرق</button>
-                <button class="team-count-btn" data-count="4" type="button">4 فرق</button>
+              <label>نوع المشاركة</label>
+              <div class="competition-mode-picker">
+                <button class="competition-mode-btn active" data-competition="teams" type="button">بين الفرق</button>
+                <button class="competition-mode-btn" data-competition="students" type="button">طلاب أفراد</button>
               </div>
-              <div id="team-inputs" class="team-inputs-grid">
-                <div class="team-input-wrap">
-                  <label for="team-1">اسم الفريق الأول</label>
-                  <input id="team-1" class="team-name-input" type="text" value="الفريق الأول" maxlength="25" />
+            </div>
+
+            <div id="team-setup-section" class="participant-setup-section">
+              <div class="field-group">
+                <label>عدد الفرق</label>
+                <div class="team-count-picker">
+                  <button class="team-count-btn active" data-count="2" type="button">فريقان</button>
+                  <button class="team-count-btn" data-count="3" type="button">3 فرق</button>
+                  <button class="team-count-btn" data-count="4" type="button">4 فرق</button>
                 </div>
-                <div class="team-input-wrap">
-                  <label for="team-2">اسم الفريق الثاني</label>
-                  <input id="team-2" class="team-name-input" type="text" value="الفريق الثاني" maxlength="25" />
+                <div id="team-inputs" class="team-inputs-grid">
+                  <div class="team-input-wrap">
+                    <label for="team-1">اسم الفريق الأول</label>
+                    <input id="team-1" class="team-name-input" type="text" value="الفريق الأول" maxlength="25" />
+                  </div>
+                  <div class="team-input-wrap">
+                    <label for="team-2">اسم الفريق الثاني</label>
+                    <input id="team-2" class="team-name-input" type="text" value="الفريق الثاني" maxlength="25" />
+                  </div>
+                  <div class="team-input-wrap hidden">
+                    <label for="team-3">اسم الفريق الثالث</label>
+                    <input id="team-3" class="team-name-input" type="text" value="الفريق الثالث" maxlength="25" />
+                  </div>
+                  <div class="team-input-wrap hidden">
+                    <label for="team-4">اسم الفريق الرابع</label>
+                    <input id="team-4" class="team-name-input" type="text" value="الفريق الرابع" maxlength="25" />
+                  </div>
                 </div>
-                <div class="team-input-wrap hidden">
-                  <label for="team-3">اسم الفريق الثالث</label>
-                  <input id="team-3" class="team-name-input" type="text" value="الفريق الثالث" maxlength="25" />
-                </div>
-                <div class="team-input-wrap hidden">
-                  <label for="team-4">اسم الفريق الرابع</label>
-                  <input id="team-4" class="team-name-input" type="text" value="الفريق الرابع" maxlength="25" />
-                </div>
+              </div>
+            </div>
+
+            <div id="student-setup-section" class="participant-setup-section hidden">
+              <div class="field-group">
+                <label for="student-count">عدد الطلاب المشاركين</label>
+                <select id="student-count">
+                  <option value="5">5 طلاب</option>
+                  <option value="10" selected>10 طلاب</option>
+                  <option value="15">15 طالبًا</option>
+                  <option value="20">20 طالبًا</option>
+                  <option value="25">25 طالبًا</option>
+                  <option value="30">30 طالبًا</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label for="student-names">أسماء الطلاب (اسم واحد في كل سطر)</label>
+                <textarea id="student-names" placeholder="الطالب 1&#10;الطالب 2&#10;الطالب 3"></textarea>
+              </div>
+              <div class="branding-actions">
+                <button id="fill-students-btn" class="secondary-btn" type="button">تعبئة أسماء افتراضية</button>
+              </div>
+              <p class="branding-note">يمكن لمدير اللعبة إدخال حتى 30 طالبًا، وسيظهر كل طالب كمشارك مستقل يمكن توجيه السؤال إليه مباشرة.</p>
+            </div>
+
+            <div class="field-group">
+              <label>اختر مجال الأسئلة</label>
+              <div class="mode-picker">
+                <button class="mode-btn active" data-mode="mixed" type="button">مجالات متنوعة</button>
+                <button class="mode-btn" data-mode="comprehension" type="button">الفهم والاستيعاب</button>
+                <button class="mode-btn" data-mode="rhetoric" type="button">فنون البلاغة</button>
+                <button class="mode-btn" data-mode="grammar" type="button">السلامة اللغوية</button>
+                <button class="mode-btn" data-mode="lexicon" type="button">الثروة اللغوية</button>
               </div>
             </div>
 
             <div class="field-group">
-              <label>اختر مسار الأسئلة</label>
-              <div class="mode-picker">
-                <button class="mode-btn active" data-mode="mixed" type="button">مختلط</button>
-                <button class="mode-btn" data-mode="comprehension" type="button">فهم واستيعاب</button>
-                <button class="mode-btn" data-mode="vocabulary" type="button">مفردات ودلالات</button>
-                <button class="mode-btn" data-mode="analysis" type="button">تحليل</button>
-              </div>
+              <label for="question-count">عدد الأسئلة في الجولة</label>
+              <input id="question-count" type="number" value="12" min="1" max="30" />
+              <p id="question-count-info" class="branding-note">يمكن لمدير اللعبة تحديد عدد الأسئلة الذي يريده، وسيتم استخدام العدد المتاح ضمن المسار المختار.</p>
             </div>
 
             <div class="info-strip">
-              <div><strong>عدد الأسئلة:</strong> حتى 12</div>
+              <div><strong>عدد الأسئلة:</strong> يحدده مدير اللعبة</div>
               <div><strong>النقاط:</strong> 10 لكل إجابة صحيحة</div>
-              <div><strong>نوع النشاط:</strong> من فريقين إلى 4 فرق</div>
+              <div><strong>نوع النشاط:</strong> فرق أو حتى 30 طالبًا بشكل فردي</div>
             </div>
 
             <div class="welcome-audio-row">
@@ -193,7 +246,7 @@
             <h3>مناسبة للتدريس التفاعلي</h3>
             <ul>
               <li>أسئلة مباشرة من موضوع الدرس الرابع للصف الثاني عشر.</li>
-              <li>تركيز على الفهم والاستيعاب والتحليل.</li>
+              <li>إمكانية التبديل بين الفهم والاستيعاب والبلاغة والسلامة اللغوية والثروة اللغوية.</li>
               <li>تغذية راجعة فورية بعد كل إجابة.</li>
               <li>مساعد ذكي يعطي تلميحًا تربويًا دون كشف الإجابة.</li>
               <li>دعم صوتي اختياري لقراءة السؤال أو الشرح.</li>
@@ -214,15 +267,27 @@
         <div class="hud">
           <div class="hud-item"><span>الدور الحالي</span><strong id="player-label">الفريق الأول</strong></div>
           <div class="hud-item"><span>السؤال</span><strong id="progress-label">1 / 12</strong></div>
-          <div class="hud-item"><span>نقاط الفريق</span><strong id="score-label">0</strong></div>
+          <div class="hud-item"><span id="score-caption">نقاط الفريق</span><strong id="score-label">0</strong></div>
           <div class="hud-item timer"><span>الوقت</span><strong id="timer-label">25</strong></div>
         </div>
 
         <div id="teams-board" class="teams-board"></div>
 
+        <div class="director-panel">
+          <div class="field-group">
+            <label for="target-select">توجيه السؤال إلى</label>
+            <select id="target-select"></select>
+          </div>
+          <div class="director-actions">
+            <button id="apply-target-btn" class="secondary-btn" type="button">اعتماد الاختيار</button>
+            <button id="random-target-btn" class="ghost-btn" type="button">اختيار عشوائي</button>
+          </div>
+          <p id="director-note" class="director-note">يمكن لمدير اللعبة توجيه السؤال إلى الفريق أو الطالب المناسب قبل اعتماد الإجابة.</p>
+        </div>
+
         <div class="question-card">
           <div class="question-topbar">
-            <span id="category-tag" class="category-tag">فهم واستيعاب</span>
+            <span id="category-tag" class="category-tag">الفهم والاستيعاب</span>
             <div class="progress-track">
               <div id="progress-bar" class="progress-bar"></div>
             </div>

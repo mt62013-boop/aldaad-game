@@ -721,7 +721,8 @@ select option {
 }
 
 .mode-picker,
-.team-count-picker {
+.team-count-picker,
+.competition-mode-picker {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -830,6 +831,116 @@ select option {
   color: #dbe4f0;
 }
 
+.participant-setup-section {
+  margin-bottom: 12px;
+}
+
+#student-names {
+  min-height: 150px;
+}
+
+.director-panel {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 14px;
+  padding: 14px;
+  background: var(--surface-gradient);
+  border: 1px solid var(--surface-border);
+  border-radius: 18px;
+  box-shadow: var(--surface-shadow);
+  color: var(--text);
+}
+
+.director-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.director-note {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--soft-text);
+  line-height: 1.75;
+}
+
+.offline-indicator {
+  position: sticky;
+  top: 10px;
+  z-index: 40;
+  width: min(760px, calc(100vw - 20px));
+  margin: 10px auto 0;
+  padding: 10px 14px;
+  border-radius: 999px;
+  text-align: center;
+  font-weight: 700;
+  box-shadow: 0 14px 28px rgba(13, 37, 58, 0.18);
+}
+
+.offline-indicator.offline {
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+  color: #ffffff;
+}
+
+.offline-indicator.online {
+  background: linear-gradient(135deg, #2f855a, #48bb78);
+  color: #ffffff;
+}
+
+.install-splash {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(7, 14, 26, 0.48);
+  z-index: 80;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+.install-splash.hidden {
+  display: none;
+}
+
+.install-splash.fade-out {
+  animation: installSplashFadeOut 0.45s ease forwards;
+}
+
+.install-splash-card {
+  width: min(340px, 92vw);
+  padding: 24px 20px;
+  border-radius: 24px;
+  text-align: center;
+  color: var(--text);
+  background: var(--surface-gradient);
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 24px 46px rgba(18, 41, 65, 0.22);
+}
+
+.install-splash-logo {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  margin: 0 auto 12px;
+  display: block;
+}
+
+.install-splash-card strong {
+  display: block;
+  margin: 8px 0 6px;
+  font-size: 1.15rem;
+}
+
+.install-splash-card p {
+  margin: 0;
+  color: var(--soft-text);
+  line-height: 1.8;
+}
+
 .question-editor-status.success {
   color: #bbf7d0;
 }
@@ -866,12 +977,14 @@ select option {
   box-shadow: var(--brand-shadow);
 }
 
+.competition-mode-btn,
 .mode-btn,
 .team-count-btn {
   background: var(--brand-gradient-soft);
   padding: 10px 14px;
 }
 
+.competition-mode-btn.active,
 .mode-btn.active,
 .team-count-btn.active {
   background: var(--brand-gradient);
@@ -1360,6 +1473,15 @@ select option {
   }
 }
 
+@keyframes installSplashFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 @keyframes welcomeCardFade {
   from {
     opacity: 0;
@@ -1613,20 +1735,33 @@ select option {
 
   .mode-picker,
   .team-count-picker,
+  .competition-mode-picker,
   .question-editor-toolbar,
   .assistant-actions,
   .welcome-actions,
-  .action-row {
+  .action-row,
+  .director-actions {
     gap: 8px;
   }
 
   .mode-btn,
   .team-count-btn,
+  .competition-mode-btn,
   .primary-btn,
   .secondary-btn,
   .ghost-btn,
   .assistant-btn {
     width: 100%;
+  }
+
+  .director-panel {
+    grid-template-columns: 1fr;
+    padding: 12px;
+  }
+
+  .offline-indicator {
+    border-radius: 16px;
+    font-size: 0.9rem;
   }
 
   .hero-game-logo-wrap {
