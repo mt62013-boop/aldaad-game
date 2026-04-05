@@ -177,11 +177,11 @@
                 <div id="team-inputs" class="team-inputs-grid">
                   <div class="team-input-wrap">
                     <label for="team-1">اسم الفريق الأول</label>
-                    <input id="team-1" class="team-name-input" type="text" value="" placeholder="اكتب اسم الفريق الأول" maxlength="25" />
+                    <input id="team-1" class="team-name-input" type="text" value="" placeholder="اكتب اسم الفريق الأول" maxlength="25" required />
                   </div>
                   <div class="team-input-wrap">
                     <label for="team-2">اسم الفريق الثاني</label>
-                    <input id="team-2" class="team-name-input" type="text" value="" placeholder="اكتب اسم الفريق الثاني" maxlength="25" />
+                    <input id="team-2" class="team-name-input" type="text" value="" placeholder="اكتب اسم الفريق الثاني" maxlength="25" required />
                   </div>
                 </div>
               </div>
@@ -195,10 +195,10 @@
                 </select>
               </div>
               <div class="field-group">
-                <label for="student-names">اسم الطالب</label>
-                <textarea id="student-names" rows="2" placeholder="اكتب اسم الطالب هنا"></textarea>
+                <label for="student-names">أسماء الطلاب المشاركين (اسم واحد في كل سطر)</label>
+                <textarea id="student-names" rows="4" placeholder="اكتب اسم الطالب الأول&#10;ثم اسم الطالب التالي" required></textarea>
               </div>
-              <p class="branding-note">في هذا الوضع يشارك طالب واحد فقط في كل مرة، ويمكن تغيير الاسم للطالب التالي مع بقاء نفس أسئلة الجلسة.</p>
+              <p class="branding-note">في هذا الوضع يجيب الطلاب واحدًا بعد الآخر على نفس أسئلة الجلسة، ولن ينتقل التطبيق إلى السؤال التالي إلا بعد آخر طالب مشارك.</p>
             </div>
 
             <div class="field-group">
@@ -302,7 +302,7 @@
           <h2 id="question-text">سيظهر السؤال هنا</h2>
           <div id="answers-container" class="answers-grid"></div>
 
-          <div class="assistant-card">
+          <div class="assistant-card hidden">
             <div class="assistant-header">
               <h3>المساعد الذكي</h3>
               <div class="assistant-actions">
@@ -361,6 +361,7 @@
           </div>
 
           <div class="action-row">
+            <button id="postgame-read-btn" class="ghost-btn" type="button">استمع للشرح بعد اللعبة</button>
             <button id="announce-winner-btn" class="secondary-btn" type="button">استمع لإعلان الفائز</button>
             <button id="restart-btn" class="primary-btn" type="button">إعادة اللعب</button>
           </div>

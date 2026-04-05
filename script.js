@@ -570,6 +570,7 @@ const assistBtn = document.getElementById("assist-btn");
 const readBtn = document.getElementById("read-btn");
 const stopAudioBtn = document.getElementById("stop-audio-btn");
 const assistantText = document.getElementById("assistant-text");
+const assistantCard = document.querySelector(".assistant-card");
 const teamsBoard = document.getElementById("teams-board");
 const scoreCaption = document.getElementById("score-caption");
 const targetSelect = document.getElementById("target-select");
@@ -591,6 +592,7 @@ const finalScore = document.getElementById("final-score");
 const finalCorrect = document.getElementById("final-correct");
 const finalPercent = document.getElementById("final-percent");
 const recommendationText = document.getElementById("recommendation-text");
+const postgameReadBtn = document.getElementById("postgame-read-btn");
 const finalRanking = document.getElementById("final-ranking");
 const winnerCertificate = document.getElementById("winner-certificate");
 const certificateSchool = document.getElementById("certificate-school");
@@ -600,7 +602,7 @@ const certificateScore = document.getElementById("certificate-score");
 const TEAM_LABELS = ["الفريق الأول", "الفريق الثاني", "الفريق الثالث", "الفريق الرابع"];
 const OPTION_LABELS = ["الأول", "الثاني", "الثالث", "الرابع"];
 const DEFAULT_STUDENT_COUNT = 1;
-const MAX_STUDENTS = 1;
+const MAX_STUDENTS = 30;
 const QUESTION_CATEGORIES = ["الفهم والاستيعاب", "فنون البلاغة", "السلامة اللغوية", "الثروة اللغوية"];
 const LESSON_OPTIONS = [
   { value: "all", label: "جميع الدروس" },
@@ -637,6 +639,7 @@ const gameState = {
   currentTeamIndex: -1,
   selectedQuestions: [],
   currentIndex: 0,
+  roundParticipantIndex: 0,
   score: 0,
   correctAnswers: 0,
   timer: TIME_PER_QUESTION,
@@ -725,6 +728,7 @@ addQuestionBtn.addEventListener("click", addNewQuestion);
 assistBtn.addEventListener("click", provideSmartHint);
 readBtn.addEventListener("click", readCurrentContent);
 stopAudioBtn.addEventListener("click", stopSpeech);
+postgameReadBtn?.addEventListener("click", readPostgameExplanation);
 buzzInBtn?.addEventListener("click", () => {
   applyTargetSelection(undefined, { name: fastestNameInput?.value || "", buzz: true });
 });
@@ -1217,19 +1221,18 @@ function updateQuestionCountSetting(count) {
 function populateStudentNames(count = DEFAULT_STUDENT_COUNT, forceReset = false) {
   if (!studentNamesInput) return;
 
-  const safeCount = Math.min(MAX_STUDENTS, Math.max(1, Number(count) || DEFAULT_STUDENT_COUNT));
-  const existingNames = forceReset
+  const cleanedNames = forceReset
     ? []
     : studentNamesInput.value
         .split(/\r?\n/)
         .map((name) => name.trim())
-        .filter(Boolean);
+        .filter(Boolean)
+        .slice(0, MAX_STUDENTS);
 
-  const names = Array.from({ length: safeCount }, (_, index) => existingNames[index] || "");
-  studentNamesInput.value = names.join("\n").trimEnd();
+  studentNamesInput.value = cleanedNames.join("\n");
 
   if (studentCountSelect) {
-    studentCountSelect.value = String(safeCount);
+    studentCountSelect.value = String(Math.max(1, Number(count) || DEFAULT_STUDENT_COUNT));
   }
 }
 
@@ -1251,10 +1254,32 @@ function startGame() {
   const inputName = playerNameInput.value.trim();
   gameState.playerName = inputName || "حصة اللغة العربية";
   gameState.currentIndex = 0;
+  gameState.roundParticipantIndex = 0;
   gameState.currentTeamIndex = -1;
   gameState.score = 0;
   gameState.correctAnswers = 0;
   gameState.categoryStats = {};
+
+  if (gameState.competitionMode === "teams") {
+    const emptyTeam = teamNameInputs.slice(0, 2).find((input) => !input.value.trim());
+    if (emptyTeam) {
+      setQuestionEditorStatus("اكتب اسم الفريق الأول والثاني قبل بدء اللعبة.", "error");
+      emptyTeam.focus();
+      return;
+    }
+  } else {
+    const enteredStudentNames = (studentNamesInput?.value || "")
+      .split(/\r?\n/)
+      .map((name) => name.trim())
+      .filter(Boolean);
+
+    if (!enteredStudentNames.length) {
+      setQuestionEditorStatus("اكتب اسم الطالب أو الطلاب المشاركين قبل بدء اللعبة.", "error");
+      studentNamesInput?.focus();
+      return;
+    }
+  }
+
   gameState.teams = buildParticipants();
 
   const filtered = questionBank.filter(matchesMode);
@@ -1290,23 +1315,21 @@ function buildParticipants() {
 }
 
 function buildTeams() {
-  return teamNameInputs.slice(0, gameState.teamCount).map((input, index) => ({
-    name: input.value.trim() || TEAM_LABELS[index],
+  return teamNameInputs.slice(0, gameState.teamCount).map((input) => ({
+    name: input.value.trim(),
     score: 0,
     correct: 0
   }));
 }
 
 function buildStudents() {
-  const desiredCount = Math.min(MAX_STUDENTS, Math.max(1, Number(studentCountSelect?.value || DEFAULT_STUDENT_COUNT)));
   const enteredNames = (studentNamesInput?.value || "")
     .split(/\r?\n/)
     .map((name) => name.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .slice(0, 30);
 
-  const names = Array.from({ length: desiredCount }, (_, index) => enteredNames[index] || `الطالب ${index + 1}`);
-
-  return names.map((name) => ({
+  return enteredNames.map((name) => ({
     name,
     score: 0,
     correct: 0
@@ -1521,12 +1544,15 @@ function renderQuestion() {
   readBtn.disabled = !speechSupported;
   stopAudioBtn.disabled = !speechSupported;
   readBtn.textContent = "استمع للسؤال";
+  if (assistantCard) {
+    assistantCard.classList.add("hidden");
+  }
   if (fastestNameInput) {
     fastestNameInput.value = "";
   }
   updateBuzzLockUI();
   assistantText.textContent = gameState.competitionMode === "students"
-    ? "هذا السؤال موجّه إلى طالب واحد في هذه الجولة، مع بقاء نفس أسئلة الجلسة عند تغيير الاسم لاحقًا."
+    ? "هذا السؤال سيتكرر على كل طالب مشارك في الجلسة قبل الانتقال للسؤال التالي."
     : "السؤال الآن ظاهر للفريقين. سجّل اسم الأسرع أولًا ثم اختر الإجابة لحساب النقاط له.";
 
   const question = gameState.selectedQuestions[gameState.currentIndex];
@@ -1534,13 +1560,15 @@ function renderQuestion() {
 
   playerLabel.textContent = gameState.competitionMode === "students" ? "الطالب الحالي" : "بانتظار الأسرع";
   scoreLabel.textContent = gameState.competitionMode === "students" && gameState.teams.length === 1 ? String(gameState.teams[0].score) : "—";
-  progressLabel.textContent = `${gameState.currentIndex + 1} / ${gameState.selectedQuestions.length}`;
+  progressLabel.textContent = gameState.competitionMode === "students"
+    ? `${gameState.currentIndex + 1} / ${gameState.selectedQuestions.length} • الطالب ${Math.min(gameState.roundParticipantIndex + 1, Math.max(gameState.teams.length, 1))}/${Math.max(gameState.teams.length, 1)}`
+    : `${gameState.currentIndex + 1} / ${gameState.selectedQuestions.length}`;
   progressBar.style.width = `${((gameState.currentIndex + 1) / gameState.selectedQuestions.length) * 100}%`;
   categoryTag.textContent = question.category;
 
   if (directorNote) {
     directorNote.textContent = gameState.competitionMode === "students"
-      ? "هذا السؤال مخصص لطالب واحد في هذه الجولة، ويمكنك تغيير الاسم لاحقًا للطالب التالي بنفس أسئلة الجلسة."
+      ? `الدور الآن على ${gameState.teams[gameState.roundParticipantIndex]?.name || "الطالب الحالي"}. لن ينتقل التطبيق إلى السؤال التالي إلا بعد آخر طالب في الجلسة.`
       : "السؤال نفسه ظاهر للفريقين. سجّل اسم الفريق الأسرع أو اضغط على اسمه في اللوحة ثم اختر الإجابة.";
   }
   questionText.textContent = question.prompt;
@@ -1560,15 +1588,16 @@ function renderQuestion() {
 
   setAnswerButtonsEnabled(false);
 
-  if (gameState.competitionMode === "students" && gameState.teams.length === 1) {
-    gameState.currentTeamIndex = 0;
+  if (gameState.competitionMode === "students" && gameState.teams.length) {
+    const participantIndex = Math.min(gameState.roundParticipantIndex, gameState.teams.length - 1);
+    gameState.currentTeamIndex = participantIndex;
     gameState.buzzLocked = true;
     if (fastestNameInput) {
-      fastestNameInput.value = gameState.teams[0].name;
+      fastestNameInput.value = gameState.teams[participantIndex].name;
     }
-    playerLabel.textContent = gameState.teams[0].name;
-    scoreLabel.textContent = String(gameState.teams[0].score);
-    gameState.lastNarration = buildQuestionNarration(question, gameState.teams[0].name);
+    playerLabel.textContent = gameState.teams[participantIndex].name;
+    scoreLabel.textContent = String(gameState.teams[participantIndex].score);
+    gameState.lastNarration = buildQuestionNarration(question, gameState.teams[participantIndex].name);
     updateBuzzLockUI();
     setAnswerButtonsEnabled(true);
   }
@@ -1729,6 +1758,16 @@ function readCurrentContent() {
   speakText(gameState.lastNarration);
 }
 
+function readPostgameExplanation() {
+  const summary = [resultSummary.textContent, recommendationText.textContent]
+    .map((text) => (text || "").trim())
+    .filter(Boolean)
+    .join(". ");
+
+  if (!summary) return;
+  speakText(summary);
+}
+
 function buildQuestionNarration(question, teamName = "") {
   const optionsText = question.options
     .map((option, index) => `الخيار ${OPTION_LABELS[index]}: ${option}`)
@@ -1884,11 +1923,25 @@ function lockAnswer(selectedIndex) {
   renderTeamsBoard();
   feedbackBox.innerHTML = message;
   feedbackBox.classList.remove("hidden");
-  nextBtn.textContent = gameState.currentIndex === gameState.selectedQuestions.length - 1 ? "اعرض النتيجة" : "السؤال التالي";
+
+  const hasMoreStudentsThisQuestion = gameState.competitionMode === "students"
+    && gameState.roundParticipantIndex < gameState.teams.length - 1;
+  nextBtn.textContent = hasMoreStudentsThisQuestion
+    ? "الطالب التالي"
+    : gameState.currentIndex === gameState.selectedQuestions.length - 1
+      ? "اعرض النتيجة"
+      : "السؤال التالي";
   nextBtn.classList.remove("hidden");
 }
 
 function goToNextQuestion() {
+  if (gameState.competitionMode === "students" && gameState.roundParticipantIndex < gameState.teams.length - 1) {
+    gameState.roundParticipantIndex += 1;
+    renderQuestion();
+    return;
+  }
+
+  gameState.roundParticipantIndex = 0;
   if (gameState.currentIndex < gameState.selectedQuestions.length - 1) {
     gameState.currentIndex += 1;
     renderQuestion();
