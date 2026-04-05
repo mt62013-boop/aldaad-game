@@ -531,6 +531,8 @@ const studentSetupSection = document.getElementById("student-setup-section");
 const studentCountSelect = document.getElementById("student-count");
 const studentNamesInput = document.getElementById("student-names");
 const fillStudentsBtn = document.getElementById("fill-students-btn");
+const lessonSelect = document.getElementById("lesson-filter");
+const lessonFilterInfo = document.getElementById("lesson-filter-info");
 const questionCountInput = document.getElementById("question-count");
 const questionCountInfo = document.getElementById("question-count-info");
 const startBtn = document.getElementById("start-btn");
@@ -595,6 +597,16 @@ const OPTION_LABELS = ["الأول", "الثاني", "الثالث", "الراب
 const DEFAULT_STUDENT_COUNT = 10;
 const MAX_STUDENTS = 30;
 const QUESTION_CATEGORIES = ["الفهم والاستيعاب", "فنون البلاغة", "السلامة اللغوية", "الثروة اللغوية"];
+const LESSON_OPTIONS = [
+  { value: "all", label: "جميع الدروس" },
+  { value: "lesson1", label: "الدرس الأول — آيات من سورة الزمر" },
+  { value: "lesson2", label: "الدرس الثاني — جابر عثرات الكرام" },
+  { value: "lesson3", label: "الدرس الثالث — الوحي الخالد" },
+  { value: "lesson4", label: "الدرس الرابع — الإسلام يحارب السلبية" },
+  { value: "lesson5", label: "الدرس الخامس — الغبطة فكرة" }
+];
+const LESSON_LABELS = Object.fromEntries(LESSON_OPTIONS.map((option) => [option.value, option.label]));
+const DEFAULT_LESSON_FILTER = "all";
 const DEFAULT_LESSON_TITLE = "الضاد";
 const DEFAULT_LEGACY_TITLE = "الإسلام يحارب السلبية";
 const DEFAULT_LESSON_SUBTITLE = "تعلم بمرح";
@@ -614,6 +626,7 @@ const gameState = {
   playerName: "حصة اللغة العربية",
   competitionMode: "teams",
   teamCount: 2,
+  lessonFilter: DEFAULT_LESSON_FILTER,
   questionLimit: DEFAULT_QUESTIONS_PER_GAME,
   teams: [],
   currentTeamIndex: 0,
@@ -661,6 +674,10 @@ studentCountSelect?.addEventListener("change", () => {
 
 fillStudentsBtn?.addEventListener("click", () => {
   populateStudentNames(Number(studentCountSelect?.value || DEFAULT_STUDENT_COUNT), true);
+});
+
+lessonSelect?.addEventListener("change", () => {
+  updateLessonSelection(lessonSelect.value);
 });
 
 questionCountInput?.addEventListener("input", () => {
@@ -910,10 +927,28 @@ function normalizeQuestionCategory(question) {
   return "الفهم والاستيعاب";
 }
 
+function normalizeQuestionLesson(question) {
+  const lesson = (question?.lesson || "").trim();
+  const text = `${question?.prompt || ""} ${question?.explanation || ""}`;
+
+  if (lesson && LESSON_LABELS[lesson] && lesson !== "all") {
+    return lesson;
+  }
+
+  if (/الزمر|تقنطوا|مقاليد|مفازة|أنيبوا|يا حسرتى|جنب الله/.test(text)) return "lesson1";
+  if (/خزيمة|عكرمة|جابر عثرات الكرام|الرقة|سليمان بن عبد الملك/.test(text)) return "lesson2";
+  if (/الوحي الخالد|الربيع|الروض|الدجى|صوادح|شعفاتها|الجمال/.test(text)) return "lesson3";
+  if (/السلبية|الإيجابية|التواكل|المبادرة|المسؤولية|الإصلاح/.test(text)) return "lesson4";
+  if (/الغبطة|العيد|الكوخ|التشاؤم|العبوس|القفر|مكفهرة/.test(text)) return "lesson5";
+
+  return "lesson4";
+}
+
 function normalizeQuestionSet(questions = []) {
   return questions.map((question) => ({
     ...question,
-    category: normalizeQuestionCategory(question)
+    category: normalizeQuestionCategory(question),
+    lesson: normalizeQuestionLesson(question)
   }));
 }
 
@@ -922,7 +957,7 @@ function mergeQuestionBanks(savedQuestions = [], defaultQuestions = []) {
   const seen = new Set();
 
   return mergedQuestions.filter((question) => {
-    const promptKey = `${normalizeQuestionCategory(question)}::${(question.prompt || "").trim()}`;
+    const promptKey = `${normalizeQuestionLesson(question)}::${normalizeQuestionCategory(question)}::${(question.prompt || "").trim()}`;
     if (!promptKey || seen.has(promptKey)) {
       return false;
     }
@@ -969,6 +1004,17 @@ function renderQuestionEditor(statusMessage = `عدد الأسئلة الحال�
           <div class="question-edit-header">
             <strong>السؤال ${index + 1}</strong>
             <button class="ghost-btn delete-question-btn" type="button" data-index="${index}">حذف</button>
+          </div>
+          <div class="field-group">
+            <label>الدرس</label>
+            <select class="question-lesson">
+              ${LESSON_OPTIONS
+                .filter((option) => option.value !== "all")
+                .map(
+                  (option) => `<option value="${option.value}" ${normalizeQuestionLesson(question) === option.value ? "selected" : ""}>${option.label}</option>`
+                )
+                .join("")}
+            </select>
           </div>
           <div class="field-group">
             <label>التصنيف</label>
@@ -1032,6 +1078,7 @@ function renderQuestionEditor(statusMessage = `عدد الأسئلة الحال�
 
 function collectQuestionsFromEditor() {
   return Array.from(questionEditorList.querySelectorAll(".question-edit-card")).map((card) => ({
+    lesson: card.querySelector(".question-lesson").value.trim(),
     category: card.querySelector(".question-category").value.trim(),
     prompt: card.querySelector(".question-prompt").value.trim(),
     options: Array.from(card.querySelectorAll(".question-option-input")).map((input) => input.value.trim()),
@@ -1086,6 +1133,7 @@ function resetQuestionsToDefaults() {
 
 function addNewQuestion() {
   questionBank.push({
+    lesson: gameState.lessonFilter === "all" ? "lesson1" : gameState.lessonFilter,
     category: "الفهم والاستيعاب",
     prompt: "اكتب السؤال الجديد هنا",
     options: ["الخيار الأول", "الخيار الثاني", "الخيار الثالث", "الخيار الرابع"],
@@ -1113,10 +1161,28 @@ function updateCompetitionMode(mode) {
   updateQuestionCountSetting(Number(questionCountInput?.value || gameState.questionLimit));
 }
 
+function updateLessonSelection(lessonValue) {
+  const normalizedLesson = LESSON_LABELS[lessonValue] ? lessonValue : DEFAULT_LESSON_FILTER;
+  gameState.lessonFilter = normalizedLesson;
+
+  if (lessonSelect) {
+    lessonSelect.value = normalizedLesson;
+  }
+
+  if (lessonFilterInfo) {
+    lessonFilterInfo.textContent = normalizedLesson === "all"
+      ? "يمكنك تشغيل الأسئلة من جميع الدروس أو تخصيص الجولة لدرس واحد فقط."
+      : `سيتم تخصيص الجولة لـ ${LESSON_LABELS[normalizedLesson]}.`;
+  }
+
+  updateQuestionCountSetting(Number(questionCountInput?.value || gameState.questionLimit));
+}
+
 function updateQuestionCountSetting(count) {
   const normalizedCount = Math.min(MAX_QUESTIONS_PER_GAME, Math.max(1, Number(count) || DEFAULT_QUESTIONS_PER_GAME));
-  const availableCount = questionBank.filter(matchesMode).length || questionBank.length;
-  const actualCount = availableCount ? Math.min(normalizedCount, availableCount) : normalizedCount;
+  const availableCount = questionBank.filter(matchesMode).length;
+  const actualCount = availableCount ? Math.min(normalizedCount, availableCount) : 0;
+  const selectedLessonLabel = LESSON_LABELS[gameState.lessonFilter] || LESSON_LABELS[DEFAULT_LESSON_FILTER];
 
   gameState.questionLimit = normalizedCount;
 
@@ -1126,8 +1192,8 @@ function updateQuestionCountSetting(count) {
 
   if (questionCountInfo) {
     questionCountInfo.textContent = availableCount
-      ? `سيتم طرح ${actualCount} سؤالًا في الجولة${normalizedCount > availableCount ? ` لأن المتاح في هذا المسار هو ${availableCount} فقط.` : "."}`
-      : "أضف أسئلة أولًا ثم اختر العدد المطلوب للجولة.";
+      ? `سيتم طرح ${actualCount} سؤالًا من ${selectedLessonLabel}${normalizedCount > availableCount ? ` لأن المتاح حاليًا هو ${availableCount} فقط.` : "."}`
+      : `لا توجد أسئلة متاحة حاليًا ضمن ${selectedLessonLabel} والمجال المختار.`;
   }
 }
 
@@ -1179,7 +1245,8 @@ function startGame() {
 
   const filtered = questionBank.filter(matchesMode);
   if (!filtered.length) {
-    setQuestionEditorStatus("لا توجد أسئلة مناسبة للمسار المحدد. عدّل الأسئلة أو اختر وضع (مختلط).", "error");
+    const selectedLessonLabel = LESSON_LABELS[gameState.lessonFilter] || LESSON_LABELS[DEFAULT_LESSON_FILTER];
+    setQuestionEditorStatus(`لا توجد أسئلة مناسبة ضمن ${selectedLessonLabel} والمجال الحالي. عدّل الأسئلة أو اختر درسًا/مجالًا آخر.`, "error");
     document.querySelector(".question-editor-panel").open = true;
     return;
   }
@@ -1194,7 +1261,7 @@ function startGame() {
   gameState.selectedQuestions = shuffleArray(filtered).slice(0, totalQuestionsForRound);
 
   if (totalQuestionsForRound < gameState.questionLimit) {
-    assistantText.textContent = `تم تجهيز ${totalQuestionsForRound} سؤالًا لأن المتاح في المسار المختار أقل من العدد المطلوب.`;
+    assistantText.textContent = `تم تجهيز ${totalQuestionsForRound} سؤالًا لأن المتاح في الدرس أو المجال المختار أقل من العدد المطلوب.`;
   }
 
   scoreCaption.textContent = gameState.competitionMode === "students" ? "نقاط الطالب" : "نقاط الفريق";
@@ -1314,13 +1381,16 @@ function getCompetitionNouns() {
 
 function matchesMode(question) {
   const normalizedCategory = normalizeQuestionCategory(question);
+  const normalizedLesson = normalizeQuestionLesson(question);
 
-  if (gameState.mode === "mixed") return true;
-  if (gameState.mode === "comprehension") return normalizedCategory === "الفهم والاستيعاب";
-  if (gameState.mode === "rhetoric") return normalizedCategory === "فنون البلاغة";
-  if (gameState.mode === "grammar") return normalizedCategory === "السلامة اللغوية";
-  if (gameState.mode === "lexicon") return normalizedCategory === "الثروة اللغوية";
-  return true;
+  const modeMatch = gameState.mode === "mixed"
+    || (gameState.mode === "comprehension" && normalizedCategory === "الفهم والاستيعاب")
+    || (gameState.mode === "rhetoric" && normalizedCategory === "فنون البلاغة")
+    || (gameState.mode === "grammar" && normalizedCategory === "السلامة اللغوية")
+    || (gameState.mode === "lexicon" && normalizedCategory === "الثروة اللغوية");
+
+  const lessonMatch = gameState.lessonFilter === "all" || normalizedLesson === gameState.lessonFilter;
+  return modeMatch && lessonMatch;
 }
 
 function renderQuestion() {
@@ -1871,6 +1941,7 @@ updateBranding();
 updateCompetitionMode(gameState.competitionMode);
 updateTeamCount(gameState.teamCount);
 populateStudentNames(DEFAULT_STUDENT_COUNT);
+updateLessonSelection(gameState.lessonFilter);
 updateQuestionCountSetting(DEFAULT_QUESTIONS_PER_GAME);
 readBtn.disabled = !speechSupported;
 stopAudioBtn.disabled = !speechSupported;
