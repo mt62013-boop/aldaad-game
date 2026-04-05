@@ -35,6 +35,8 @@
     </div>
   </div>
 
+  <div class="app-watermark" aria-hidden="true">طه كامل</div>
+
   <div class="app-shell">
     <header class="hero">
       <div class="hero-main">
@@ -107,20 +109,21 @@
       </section>
 
       <section id="start-screen" class="panel hidden">
-        <div class="panel-grid">
-          <div>
+        <div class="panel-grid minimal-start-grid">
+          <div class="start-core">
             <h2>ابدأ الجولة</h2>
+            <p class="start-screen-note">تم تبسيط الشاشة لتظهر الإعدادات الأساسية فقط قبل بدء اللعبة.</p>
             <div class="field-group">
               <label for="player-name">اسم الحصة أو الصف</label>
               <input id="player-name" type="text" placeholder="مثال: 12 أدبي - الشعبة أ" maxlength="30" />
             </div>
 
-            <div class="field-group fixed-title-box">
+            <div class="field-group fixed-title-box start-optional">
               <label>اسم اللعبة</label>
               <div class="fixed-branding-value">الضاد — تعلم بمرح</div>
             </div>
 
-            <div class="branding-fields">
+            <div class="branding-fields start-optional">
               <div class="field-group">
                 <label for="school-name">اسم المدرسة</label>
                 <input id="school-name" type="text" value="مدرسة أكاديمية الموهبة المشتركة" maxlength="50" />
@@ -130,16 +133,16 @@
                 <input id="teacher-name" type="text" value="معلم اللغة العربية" maxlength="50" />
               </div>
             </div>
-            <div class="field-group">
+            <div class="field-group start-optional">
               <label for="logo-upload">رفع الشعار الأصلي</label>
               <input id="logo-upload" type="file" accept="image/*" />
             </div>
-            <p class="branding-note">يمكنك تعديل اسم المعلم واسم المدرسة من هنا مباشرة، كما يمكنك اختيار الصورة الأصلية للشعار من جهازك، وسيتم حفظها تلقائيًا داخل التطبيق، بينما يبقى اسم اللعبة ثابتًا.</p>
-            <div class="branding-actions">
+            <p class="branding-note start-optional">يمكنك تعديل اسم المعلم واسم المدرسة من هنا مباشرة، كما يمكنك اختيار الصورة الأصلية للشعار من جهازك، وسيتم حفظها تلقائيًا داخل التطبيق، بينما يبقى اسم اللعبة ثابتًا.</p>
+            <div class="branding-actions start-optional">
               <button id="reset-branding-btn" class="secondary-btn" type="button">إعادة القيم الافتراضية</button>
             </div>
 
-            <details class="question-editor-panel">
+            <details class="question-editor-panel start-optional">
               <summary>تعديل الأسئلة من داخل التطبيق</summary>
               <p class="question-editor-help">
                 يمكنك تعديل الأسئلة لتناسب أي موضوع، مع الإبقاء على التصنيفات: `الفهم والاستيعاب` أو `فنون البلاغة` أو `السلامة اللغوية` أو `الثروة اللغوية`.
@@ -242,20 +245,20 @@
               <p id="question-count-info" class="branding-note">يمكن لمدير اللعبة تحديد عدد الأسئلة الذي يريده، وسيتم استخدام العدد المتاح ضمن المسار المختار.</p>
             </div>
 
-            <div class="info-strip">
+            <div class="info-strip start-optional">
               <div><strong>عدد الأسئلة:</strong> يحدده مدير اللعبة</div>
               <div><strong>النقاط:</strong> 10 لكل إجابة صحيحة</div>
               <div><strong>نوع النشاط:</strong> فرق أو حتى 30 طالبًا بشكل فردي</div>
             </div>
 
-            <div class="welcome-audio-row">
+            <div class="welcome-audio-row start-optional">
               <button id="intro-music-btn" class="ghost-btn" type="button">موسيقى البداية</button>
             </div>
 
             <button id="start-btn" class="primary-btn" type="button">ابدأ التحدي الآن</button>
           </div>
 
-          <aside class="sidebar-card">
+          <aside class="sidebar-card start-optional">
             <h3>مناسبة للتدريس التفاعلي</h3>
             <ul>
               <li>أسئلة مباشرة من موضوع الدرس الرابع للصف الثاني عشر.</li>
