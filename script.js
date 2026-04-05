@@ -228,6 +228,7 @@ const DEFAULT_LESSON_SUBTITLE = "تعلم بمرح";
 const DEFAULT_SCHOOL_NAME = "مدرسة أكاديمية الموهبة المشتركة";
 const DEFAULT_TEACHER_NAME = "معلم اللغة العربية";
 const DEFAULT_LOGO_SRC = "school-logo.png";
+const GAME_LOGO_SRC = "logo-logo.png?v=2";
 const BRANDING_STORAGE_KEY = "arabic-game-branding";
 const QUESTIONS_STORAGE_KEY = "arabic-game-custom-questions";
 const speechSupported = "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined";
@@ -276,8 +277,8 @@ schoolNameInput.addEventListener("input", updateBranding);
 teacherNameInput.addEventListener("input", updateBranding);
 logoUploadInput.addEventListener("change", handleLogoUpload);
 
-introContinueBtn.addEventListener("click", () => showScreen("start"));
-introWelcomeBtn.addEventListener("click", playWelcomeMessage);
+introContinueBtn?.addEventListener("click", () => showScreen("start"));
+introWelcomeBtn?.addEventListener("click", playWelcomeMessage);
 startBtn.addEventListener("click", startGame);
 nextBtn.addEventListener("click", goToNextQuestion);
 endGameBtn.addEventListener("click", openEndGameModal);
@@ -298,8 +299,8 @@ document.addEventListener("keydown", (event) => {
 });
 restartBtn.addEventListener("click", () => showScreen("start"));
 announceWinnerBtn.addEventListener("click", playWinnerAnnouncement);
-introMusicBtn.addEventListener("click", playIntroMusic);
-welcomeBtn.addEventListener("click", playWelcomeMessage);
+introMusicBtn?.addEventListener("click", playIntroMusic);
+welcomeBtn?.addEventListener("click", playWelcomeMessage);
 resetBrandingBtn.addEventListener("click", resetBrandingToDefaults);
 saveQuestionsBtn.addEventListener("click", saveQuestionsFromEditor);
 resetQuestionsBtn.addEventListener("click", resetQuestionsToDefaults);
@@ -367,7 +368,7 @@ function beginOpeningSequence() {
   showScreen("splash");
   window.clearTimeout(gameState.openingSequenceId);
   gameState.openingSequenceId = window.setTimeout(() => {
-    showScreen("intro");
+    showScreen("start");
     scheduleAutoIntroMusic();
   }, SPLASH_DELAY_MS);
 }
@@ -389,7 +390,7 @@ function loadSavedBranding() {
   schoolNameInput.value = savedBranding.schoolName || DEFAULT_SCHOOL_NAME;
   teacherNameInput.value = savedBranding.teacherName || DEFAULT_TEACHER_NAME;
   schoolLogoImage.src = logoSrc;
-  introLogoImage.src = logoSrc;
+  introLogoImage.src = GAME_LOGO_SRC;
 }
 
 function updateBranding() {
@@ -405,7 +406,7 @@ function updateBranding() {
   teacherNameDisplay.textContent = `إعداد المعلم/ة: ${teacherName}`;
   introSchoolDisplay.textContent = schoolName;
   introTeacherDisplay.textContent = `إعداد المعلم/ة: ${teacherName}`;
-  introLogoImage.src = schoolLogoImage.src;
+  introLogoImage.src = GAME_LOGO_SRC;
   document.title = `${lessonTitle} | ${lessonSubtitle}`;
 
   localStorage.setItem(
@@ -438,7 +439,7 @@ function resetBrandingToDefaults() {
   teacherNameInput.value = DEFAULT_TEACHER_NAME;
   logoUploadInput.value = "";
   schoolLogoImage.src = DEFAULT_LOGO_SRC;
-  introLogoImage.src = DEFAULT_LOGO_SRC;
+  introLogoImage.src = GAME_LOGO_SRC;
   localStorage.removeItem(BRANDING_STORAGE_KEY);
   updateBranding();
   assistantText.textContent = "المساعد الذكي: تمت إعادة عنوان الدرس واسم المدرسة واسم المعلم والشعار إلى القيم الافتراضية بنجاح.";
@@ -753,9 +754,11 @@ function playApplauseSound() {
 }
 
 async function playIntroMusic(options = {}) {
-  const { auto = false, announce = true } = options;
+  const { auto = false, announce = true, playWelcomeAfter = false } = options;
   if (gameState.introMusicPlayed && auto) return;
   if (!audioContext) return;
+
+  stopSpeech();
 
   try {
     if (audioContext.state === "suspended") {
@@ -772,7 +775,7 @@ async function playIntroMusic(options = {}) {
   gameState.introMusicPlayed = true;
 
   if (announce && !screens.start.classList.contains("hidden")) {
-    assistantText.textContent = "المساعد الذكي: يتم الآن تشغيل موسيقى افتتاحية خفيفة للحصة.";
+    assistantText.textContent = "المساعد الذكي: يتم الآن تشغيل موسيقى البداية فقط.";
   }
 
   playTone(523, 0.18, "sine", 0.025);
@@ -781,16 +784,18 @@ async function playIntroMusic(options = {}) {
   setTimeout(() => playTone(659, 0.18, "sine", 0.02), 580);
 
   window.clearTimeout(gameState.introSequenceTimeoutId);
-  gameState.introSequenceTimeoutId = window.setTimeout(() => {
-    playWelcomeMessage({ auto: true });
-  }, 920);
+  if (playWelcomeAfter) {
+    gameState.introSequenceTimeoutId = window.setTimeout(() => {
+      playWelcomeMessage({ auto: true });
+    }, 920);
+  }
 }
 
 function scheduleAutoIntroMusic() {
   if (!audioContext || gameState.introMusicPlayed) return;
 
   const startOnInteraction = () => {
-    playIntroMusic({ auto: true, announce: false });
+    playIntroMusic({ auto: true, announce: false, playWelcomeAfter: false });
   };
 
   window.addEventListener("pointerdown", startOnInteraction, { once: true });
@@ -798,7 +803,7 @@ function scheduleAutoIntroMusic() {
   window.addEventListener("touchstart", startOnInteraction, { once: true });
 
   window.setTimeout(() => {
-    playIntroMusic({ auto: true, announce: false });
+    playIntroMusic({ auto: true, announce: false, playWelcomeAfter: false });
   }, 260);
 }
 
@@ -835,16 +840,9 @@ function stopSpeech() {
   window.speechSynthesis.cancel();
 }
 
-function playWelcomeMessage(options = {}) {
-  const { auto = false } = options;
-  const lessonTitle = DEFAULT_LESSON_TITLE;
-  const schoolName = schoolNameInput.value.trim() || DEFAULT_SCHOOL_NAME;
-  const teacherName = teacherNameInput.value.trim() || DEFAULT_TEACHER_NAME;
-  const welcomeText = `مرحبًا بكم في ${schoolName} مع ${teacherName} في درس ${lessonTitle} للصف الثاني عشر. استعدوا لمنافسة تعليمية ممتعة في الفهم والاستيعاب والتحليل.`;
-  assistantText.textContent = auto
-    ? "المساعد الذكي: تبدأ الآن الرسالة الترحيبية الصوتية تلقائيًا بعد الموسيقى."
-    : "المساعد الذكي: يتم الآن تشغيل الرسالة الترحيبية الصوتية.";
-  speakText(welcomeText);
+function playWelcomeMessage() {
+  stopSpeech();
+  assistantText.textContent = "المساعد الذكي: تم إلغاء رسالة الترحيب.";
 }
 
 function playWinnerAnnouncement() {

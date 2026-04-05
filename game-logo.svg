@@ -1,0 +1,41 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="72" y1="56" x2="440" y2="456" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#16324F"/>
+      <stop offset="0.55" stop-color="#4AA3A2"/>
+      <stop offset="1" stop-color="#8ABF7B"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="146" y1="112" x2="362" y2="384" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF4CC"/>
+      <stop offset="0.55" stop-color="#F5C768"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+    <filter id="shadow" x="24" y="24" width="464" height="464" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="14"/>
+      <feGaussianBlur stdDeviation="18"/>
+      <feComposite in2="hardAlpha" operator="out"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.0627451 0 0 0 0 0.160784 0 0 0 0 0.247059 0 0 0 0.24 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_1"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1_1" result="shape"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#shadow)">
+    <rect x="60" y="48" width="392" height="392" rx="108" fill="url(#bg)"/>
+    <rect x="73" y="61" width="366" height="366" rx="96" stroke="#FFFFFF" stroke-opacity="0.28" stroke-width="2"/>
+  </g>
+
+  <circle cx="256" cy="180" r="86" fill="#FFFFFF" fill-opacity="0.10" stroke="#FFFFFF" stroke-opacity="0.28" stroke-width="2"/>
+
+  <path d="M170 255C170 237.327 184.327 223 202 223H236C245.941 223 255.474 226.951 262.503 233.98L274 245.477L285.497 233.98C292.526 226.951 302.059 223 312 223H342C359.673 223 374 237.327 374 255V319C374 327.837 366.837 335 358 335H314C301.268 335 289.057 340.057 280.059 349.059L274 355.118L267.941 349.059C258.943 340.057 246.732 335 234 335H186C177.163 335 170 327.837 170 319V255Z" fill="url(#gold)"/>
+  <path d="M186 245H228C242.912 245 257.214 250.923 267.757 261.465L274 267.708V355.118L267.941 349.059C258.943 340.057 246.732 335 234 335H186C177.163 335 170 327.837 170 319V261C170 252.163 177.163 245 186 245Z" fill="#FFFFFF" fill-opacity="0.28"/>
+
+  <text x="256" y="198" text-anchor="middle" font-family="Cairo, Arial, sans-serif" font-size="78" font-weight="800" fill="#FFFFFF">ض</text>
+  <text x="256" y="398" text-anchor="middle" font-family="Cairo, Arial, sans-serif" font-size="46" font-weight="800" fill="#FFFFFF">الضاد</text>
+  <text x="256" y="432" text-anchor="middle" font-family="Cairo, Arial, sans-serif" font-size="22" font-weight="700" fill="#E9F6F6">تعلم بمرح</text>
+
+  <path d="M120 120L127 136L144 138L131 149L134 166L120 157L106 166L109 149L96 138L113 136L120 120Z" fill="#F5C768"/>
+  <path d="M392 110L398 123L412 125L401 134L404 149L392 142L380 149L383 134L372 125L386 123L392 110Z" fill="#FFF4CC"/>
+</svg>
