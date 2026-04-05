@@ -115,7 +115,14 @@
         <div class="panel-grid minimal-start-grid">
           <div class="start-core">
             <h2>ابدأ الجولة</h2>
-            <p class="start-screen-note">يمكنك الآن الاختيار بين `فريقين فقط` أو `طالب واحد`، مع توجيه نفس أسئلة الجلسة للمشاركين داخل الجولة نفسها.</p>
+            <p class="start-screen-note">يمكنك تشغيلها داخل الصف أو عن بُعد: اختر `جلسة طلاب` لإرسال نفس الأسئلة لجميع الطلاب في نفس الحصة، أو اختر `فريقين فقط` للمنافسة الحضورية.</p>
+            <div class="field-group session-share-box">
+              <label>استخدام الجلسة عن بُعد أو فعليًا</label>
+              <div class="director-actions">
+                <button id="copy-session-link-btn" class="ghost-btn" type="button">نسخ رابط الجلسة</button>
+              </div>
+              <p id="session-link-status" class="branding-note">يمكنك مشاركة رابط اللعبة عبر `Teams` أو `Zoom` أو `Google Meet`، أو تشغيلها مباشرة داخل الصف.</p>
+            </div>
             <div class="field-group">
               <label for="player-name">اسم الحصة أو الصف</label>
               <input id="player-name" type="text" placeholder="مثال: 12 أدبي - الشعبة أ" maxlength="30" />
@@ -163,7 +170,7 @@
               <label>نوع المشاركة</label>
               <div class="competition-mode-picker">
                 <button class="competition-mode-btn active" data-competition="teams" type="button">فريقان فقط</button>
-                <button class="competition-mode-btn" data-competition="students" type="button">طالب واحد</button>
+                <button class="competition-mode-btn" data-competition="students" type="button">جلسة طلاب</button>
               </div>
             </div>
 
@@ -191,14 +198,14 @@
               <div class="field-group hidden">
                 <label for="student-count">عدد الطلاب المشاركين</label>
                 <select id="student-count">
-                  <option value="1" selected>طالب واحد</option>
+                  <option value="30" selected>حتى 30 طالبًا</option>
                 </select>
               </div>
               <div class="field-group">
-                <label for="student-names">أسماء الطلاب المشاركين (اسم واحد في كل سطر)</label>
-                <textarea id="student-names" rows="4" placeholder="اكتب اسم الطالب الأول&#10;ثم اسم الطالب التالي" required></textarea>
+                <label for="student-names">أسماء الطلاب المشاركين في الجلسة (اسم واحد في كل سطر)</label>
+                <textarea id="student-names" rows="6" placeholder="اكتب اسم الطالب الأول&#10;ثم الثاني&#10;ثم الثالث..." required></textarea>
               </div>
-              <p class="branding-note">في هذا الوضع يجيب الطلاب واحدًا بعد الآخر على نفس أسئلة الجلسة، ولن ينتقل التطبيق إلى السؤال التالي إلا بعد آخر طالب مشارك.</p>
+              <p class="branding-note">في هذا الوضع يرى جميع الطلاب نفس الأسئلة في الوقت نفسه، وتُحتسب النقاط لصاحب الإجابة الأسرع، مع عرض النتائج والنِّسب في نهاية الجلسة.</p>
             </div>
 
             <div class="field-group">
