@@ -1996,6 +1996,9 @@ const studentCountSelect = document.getElementById("student-count");
 const studentNamesInput = document.getElementById("student-names");
 const fillStudentsBtn = document.getElementById("fill-students-btn");
 const lessonSelect = document.getElementById("lesson-filter");
+const subLessonGroup = document.getElementById("sub-lesson-group");
+const subLessonSelect = document.getElementById("sub-lesson-filter");
+const subLessonFilterInfo = document.getElementById("sub-lesson-filter-info");
 const lessonFilterInfo = document.getElementById("lesson-filter-info");
 const questionCountInput = document.getElementById("question-count");
 const questionCountInfo = document.getElementById("question-count-info");
@@ -2082,6 +2085,44 @@ const LESSON_OPTIONS = [
 ];
 const LESSON_LABELS = Object.fromEntries(LESSON_OPTIONS.map((option) => [option.value, option.label]));
 const DEFAULT_LESSON_FILTER = "all";
+const DEFAULT_SUB_LESSON_FILTER = "all";
+const SUB_LESSON_OPTIONS = {
+  rhetoric: [
+    { value: "all", label: "جميع فروع البلاغة" },
+    { value: "rhetoric_tawriya", label: "البلاغة: التورية" },
+    { value: "rhetoric_amr", label: "البلاغة: الأغراض البلاغية للأمر" },
+    { value: "rhetoric_nahi", label: "البلاغة: الأغراض البلاغية للنهي" },
+    { value: "rhetoric_istifham", label: "البلاغة: الأغراض البلاغية للاستفهام" },
+    { value: "rhetoric_nida", label: "البلاغة: الأغراض البلاغية للنداء" }
+  ],
+  grammar: [
+    { value: "all", label: "جميع فروع القواعد" },
+    { value: "grammar_has_mahal", label: "القواعد: الجمل التي لها محل من الإعراب" },
+    { value: "grammar_no_mahal", label: "القواعد: الجمل التي ليس لها محل من الإعراب" },
+    { value: "grammar_madh_dhamm", label: "القواعد: المدح والذم" },
+    { value: "grammar_nasab", label: "القواعد: النسب" },
+    { value: "grammar_tasghir", label: "القواعد: التصغير" },
+    { value: "grammar_istifham", label: "القواعد: الاستفهام" }
+  ]
+};
+const SUB_LESSON_MATCHERS = {
+  rhetoric_tawriya: /(التورية|موطن التورية|المعنى القريب|المعنى البعيد)/,
+  rhetoric_amr: /(الغرض البلاغي.*الأمر|أسلوب الأمر|\bالأمر\b)/,
+  rhetoric_nahi: /(الغرض البلاغي.*النهي|أسلوب النهي|\bالنهي\b)/,
+  rhetoric_istifham: /(الغرض البلاغي.*الاستفهام|\bالاستفهام\b)/,
+  rhetoric_nida: /(الغرض البلاغي.*النداء|أسلوب النداء|\bالنداء\b|يا\s+عبادي|أيها)/,
+  grammar_has_mahal: /(لها\s+محل|في\s+محل|محل\s+من\s+الإعراب|موقع\s+الجملة|الجمل\s+التي\s+لها\s+محل)/,
+  grammar_no_mahal: /(لا\s+محل\s+لها|ليس\s+لها\s+محل|الجمل\s+التي\s+ليس\s+لها\s+محل|صلة\s+الاسم\s+الموصول|اعتراضية|ابتدائية|تفسيرية)/,
+  grammar_madh_dhamm: /(المدح|الذم|\bنعم\b|\bبئس\b|حبذا|المخصوص)/,
+  grammar_nasab: /(\bالنسب\b|الاسم\s+المنسوب|\bكويتي\b|\bمصري\b|\bإسلامي\b|\bعربي\b|\bوردي\b|\bشرطي\b)/,
+  grammar_tasghir: /(\bالتصغير\b|فُعَيْل|فُعَيْعِل|فُعَيْعِيل|مُصَيْبِيح|مُسَيْطِرة|أُقَيْلام)/,
+  grammar_istifham: /(الاستفهام\s+التصديقي|الاستفهام\s+التصوري|الاستفهام\s+التعييني|الاستفهام\s+المنفي|\bهل\b|\bأم\b\s+التعيينية|\bبلى\b)/
+};
+const ALL_SUB_LESSON_VALUES = new Set(
+  Object.values(SUB_LESSON_OPTIONS)
+    .flat()
+    .map((option) => option.value)
+);
 const DEFAULT_LESSON_TITLE = "الضاد";
 const DEFAULT_LEGACY_TITLE = "الإسلام يحارب السلبية";
 const DEFAULT_LESSON_SUBTITLE = "تعلم بمرح";
@@ -2103,6 +2144,7 @@ const gameState = {
   competitionMode: "teams",
   teamCount: 2,
   lessonFilter: DEFAULT_LESSON_FILTER,
+  subLessonFilter: DEFAULT_SUB_LESSON_FILTER,
   questionLimit: DEFAULT_QUESTIONS_PER_GAME,
   trueFalseRatio: 0.3,
   teams: [],
@@ -2133,6 +2175,7 @@ function saveRoundSettings() {
       mode: gameState.mode,
       competitionMode: gameState.competitionMode,
       lessonFilter: gameState.lessonFilter,
+      subLessonFilter: gameState.subLessonFilter,
       questionLimit: gameState.questionLimit,
       trueFalseRatio: gameState.trueFalseRatio
     })
@@ -2152,6 +2195,10 @@ function loadSavedRoundSettings() {
 
   if (LESSON_LABELS[saved.lessonFilter]) {
     gameState.lessonFilter = saved.lessonFilter;
+  }
+
+  if (ALL_SUB_LESSON_VALUES.has(saved.subLessonFilter)) {
+    gameState.subLessonFilter = saved.subLessonFilter;
   }
 
   if (Number.isFinite(Number(saved.questionLimit))) {
@@ -2174,6 +2221,7 @@ function updateModeSelection(modeValue) {
     button.classList.toggle("active", button.dataset.mode === normalizedMode);
   });
 
+  refreshSubLessonFilterOptions();
   updateQuestionCountSetting(Number(questionCountInput?.value || gameState.questionLimit));
   saveRoundSettings();
 }
@@ -2206,6 +2254,10 @@ fillStudentsBtn?.addEventListener("click", () => {
 
 lessonSelect?.addEventListener("change", () => {
   updateLessonSelection(lessonSelect.value);
+});
+
+subLessonSelect?.addEventListener("change", () => {
+  updateSubLessonSelection(subLessonSelect.value);
 });
 
 questionCountInput?.addEventListener("input", () => {
@@ -2672,6 +2724,7 @@ function saveQuestionsFromEditor() {
   questionBank = normalizeQuestionSet(updatedQuestions);
   localStorage.setItem(QUESTIONS_STORAGE_KEY, JSON.stringify(questionBank));
   renderQuestionEditor("تم حفظ الأسئلة الجديدة بنجاح، وأصبحت جاهزة للاستخدام في الجولة التالية مع تنويع تلقائي لمواضع الإجابات الصحيحة.", "success");
+  refreshSubLessonFilterOptions();
   updateQuestionCountSetting(Number(questionCountInput?.value || gameState.questionLimit));
 }
 
@@ -2679,6 +2732,8 @@ function resetQuestionsToDefaults() {
   questionBank = cloneDefaultQuestions();
   localStorage.removeItem(QUESTIONS_STORAGE_KEY);
   renderQuestionEditor("تمت استعادة الأسئلة الأصلية الخاصة بالدرس بنجاح، مع تنويع مواضع الإجابات الصحيحة أثناء اللعب.", "success");
+  refreshSubLessonFilterOptions();
+  updateQuestionCountSetting(Number(questionCountInput?.value || gameState.questionLimit));
 }
 
 function addNewQuestion() {
@@ -2691,6 +2746,8 @@ function addNewQuestion() {
     explanation: "اكتب شرح الإجابة الصحيحة هنا"
   });
   renderQuestionEditor("تمت إضافة سؤال جديد. عدّل محتواه ثم اضغط حفظ الأسئلة.", "success");
+  refreshSubLessonFilterOptions();
+  updateQuestionCountSetting(Number(questionCountInput?.value || gameState.questionLimit));
 }
 
 function updateCompetitionMode(mode) {
@@ -2726,8 +2783,104 @@ function updateLessonSelection(lessonValue) {
       : `سيتم تخصيص الجولة لـ ${LESSON_LABELS[normalizedLesson]}.`;
   }
 
+  refreshSubLessonFilterOptions();
   updateQuestionCountSetting(Number(questionCountInput?.value || gameState.questionLimit));
   saveRoundSettings();
+}
+
+function isSubLessonMode(mode = gameState.mode) {
+  return mode === "rhetoric" || mode === "grammar";
+}
+
+function getSubLessonOptions(mode = gameState.mode) {
+  if (mode === "rhetoric") return SUB_LESSON_OPTIONS.rhetoric;
+  if (mode === "grammar") return SUB_LESSON_OPTIONS.grammar;
+  return [{ value: "all", label: "جميع الفروع" }];
+}
+
+function getSubLessonLabel(mode = gameState.mode, value = gameState.subLessonFilter) {
+  const option = getSubLessonOptions(mode).find((item) => item.value === value);
+  return option ? option.label : "";
+}
+
+function buildQuestionSearchText(question) {
+  const optionsText = Array.isArray(question?.options) ? question.options.join(" ") : "";
+  return `${question?.prompt || ""} ${question?.explanation || ""} ${optionsText}`;
+}
+
+function matchesSubLessonBranch(question, mode = gameState.mode, selectedSubLesson = gameState.subLessonFilter) {
+  if (!isSubLessonMode(mode) || selectedSubLesson === "all") return true;
+
+  const matcher = SUB_LESSON_MATCHERS[selectedSubLesson];
+  if (!matcher) return true;
+
+  return matcher.test(buildQuestionSearchText(question));
+}
+
+function updateSubLessonSelection(subLessonValue) {
+  if (!isSubLessonMode(gameState.mode)) {
+    gameState.subLessonFilter = "all";
+    if (subLessonSelect) {
+      subLessonSelect.value = "all";
+    }
+    return;
+  }
+
+  const options = getSubLessonOptions(gameState.mode);
+  const normalizedSubLesson = options.some((item) => item.value === subLessonValue) ? subLessonValue : "all";
+  gameState.subLessonFilter = normalizedSubLesson;
+
+  if (subLessonSelect) {
+    subLessonSelect.value = normalizedSubLesson;
+  }
+
+  if (subLessonFilterInfo) {
+    subLessonFilterInfo.textContent = normalizedSubLesson === "all"
+      ? "يمكنك اختيار فرع واحد داخل المجال، أو الإبقاء على جميع الفروع."
+      : `الفرع المختار: ${getSubLessonLabel(gameState.mode, normalizedSubLesson)}.`;
+  }
+
+  updateQuestionCountSetting(Number(questionCountInput?.value || gameState.questionLimit));
+  saveRoundSettings();
+}
+
+function refreshSubLessonFilterOptions() {
+  const enabled = isSubLessonMode(gameState.mode);
+
+  if (subLessonGroup) {
+    subLessonGroup.classList.toggle("hidden", !enabled);
+  }
+
+  if (!enabled) {
+    gameState.subLessonFilter = "all";
+    if (subLessonSelect) {
+      subLessonSelect.innerHTML = '<option value="all">جميع الفروع</option>';
+      subLessonSelect.value = "all";
+    }
+    return;
+  }
+
+  const options = getSubLessonOptions(gameState.mode);
+  const basePool = questionBank.filter((question) => matchesModeAndLesson(question));
+
+  if (subLessonSelect) {
+    subLessonSelect.innerHTML = options
+      .map((option) => {
+        if (option.value === "all") {
+          return `<option value="${option.value}">${option.label} (${basePool.length})</option>`;
+        }
+
+        const branchCount = basePool.filter((question) => matchesSubLessonBranch(question, gameState.mode, option.value)).length;
+        return `<option value="${option.value}">${option.label} (${branchCount})</option>`;
+      })
+      .join("");
+  }
+
+  if (!options.some((item) => item.value === gameState.subLessonFilter)) {
+    gameState.subLessonFilter = "all";
+  }
+
+  updateSubLessonSelection(gameState.subLessonFilter);
 }
 
 function updateQuestionCountSetting(count) {
@@ -2738,6 +2891,10 @@ function updateQuestionCountSetting(count) {
   const normalizedCount = Math.min(capByBank, Math.max(1, Number.isFinite(requestedCount) ? requestedCount : fallbackCount));
   const actualCount = availableCount ? Math.min(normalizedCount, availableCount) : 0;
   const selectedLessonLabel = LESSON_LABELS[gameState.lessonFilter] || LESSON_LABELS[DEFAULT_LESSON_FILTER];
+  const selectedSubLessonLabel = isSubLessonMode(gameState.mode) && gameState.subLessonFilter !== "all"
+    ? getSubLessonLabel(gameState.mode, gameState.subLessonFilter)
+    : "";
+  const scopeLabel = selectedSubLessonLabel ? `${selectedLessonLabel} ضمن ${selectedSubLessonLabel}` : selectedLessonLabel;
 
   gameState.questionLimit = normalizedCount;
 
@@ -2749,8 +2906,8 @@ function updateQuestionCountSetting(count) {
 
   if (questionCountInfo) {
     questionCountInfo.textContent = availableCount
-      ? `سيتم طرح ${actualCount} سؤالًا من ${selectedLessonLabel}${normalizedCount > availableCount ? ` لأن المتاح حاليًا هو ${availableCount} فقط.` : "."}`
-      : `لا توجد أسئلة متاحة حاليًا ضمن ${selectedLessonLabel} والمجال المختار.`;
+      ? `سيتم طرح ${actualCount} سؤالًا من ${scopeLabel}${normalizedCount > availableCount ? ` لأن المتاح حاليًا هو ${availableCount} فقط.` : "."}`
+      : `لا توجد أسئلة متاحة حاليًا ضمن ${scopeLabel} والمجال المختار.`;
   }
 }
 
@@ -3067,6 +3224,10 @@ function getCompetitionNouns() {
 }
 
 function matchesMode(question) {
+  return matchesModeAndLesson(question) && matchesSubLessonBranch(question);
+}
+
+function matchesModeAndLesson(question) {
   const normalizedCategory = normalizeQuestionCategory(question);
   const normalizedLesson = normalizeQuestionLesson(question);
 
@@ -3949,6 +4110,7 @@ updateCompetitionMode(gameState.competitionMode);
 updateTeamCount(gameState.teamCount);
 populateStudentNames(DEFAULT_STUDENT_COUNT);
 updateLessonSelection(gameState.lessonFilter);
+updateSubLessonSelection(gameState.subLessonFilter);
 updateQuestionFormatRatioSetting(Math.round((gameState.trueFalseRatio || 0.3) * 100));
 updateQuestionCountSetting(gameState.questionLimit || questionBank.filter(matchesMode).length || DEFAULT_QUESTIONS_PER_GAME);
 readBtn.disabled = !speechSupported;
