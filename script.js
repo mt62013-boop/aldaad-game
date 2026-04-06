@@ -96,7 +96,6 @@ const currentPasswordInput = document.getElementById("current-password");
 const newPasswordInput = document.getElementById("new-password");
 const confirmPasswordInput = document.getElementById("confirm-password");
 const savePasswordBtn = document.getElementById("save-password-btn");
-const passwordChangeStatus = document.getElementById("password-change-status");
 const saveRecoveryUpdateBtn = document.getElementById("save-recovery-update-btn");
 const recoveryUpdateStatus = document.getElementById("recovery-update-status");
 const calmModeToggle = document.getElementById("calm-mode-toggle");
@@ -259,7 +258,7 @@ const SUB_LESSON_OPTIONS = {
 };
 const SUB_LESSON_MATCHERS = {
   rhetoric_tawriya: /(التورية|موطن التورية|المعنى القريب|المعنى البعيد)/,
-  rhetoric_amr: /(أمر\s+غرضه|فعل\s+أمر|الغرض\s+البلاغي.*الأمر|أسلوب\s+الأمر|\sالأمر\s|^الأمر\s|\sالأمر$)/,
+  rhetoric_amr: /( أمر\s+غرضه|فعل\s+أمر|الغرض\s+البلاغي.*الأمر|أسلوب\s+الأمر|\sالأمر\s|^الأمر\s|\sالأمر$)/,
   rhetoric_nahi: /(نهي\s+غرضه|الغرض\s+البلاغي.*النهي|أسلوب\s+النهي|للنهي|بالنهي|\sالنهي\s|^النهي\s|\sالنهي$)/,
   rhetoric_istifham: /(استفهام\s+غرضه|الغرض\s+البلاغي\s+من\s+الاستفهام|الغرض\s+البلاغي.*الاستفهام|\sالاستفهام\s|^الاستفهام\s|\sالاستفهام$)/,
   rhetoric_nida: /(نداء\s+غرضه|الغرض\s+البلاغي\s+من\s+النداء|الغرض\s+البلاغي.*النداء|أسلوب\s+النداء|\sالنداء\s|^النداء\s|\sالنداء$|يا\s+عبادي|أيها)/,
@@ -2724,7 +2723,7 @@ function buildExpandedExplanation(question) {
   }
 
   if (/تنكير|نكرة/.test(prompt)) {
-    return "التنكير قد يفيد التعظيم أو الشمول أو التكثير أو التخصيص أو التحقير أو التقليل، ويُحدد المقصود من خلال السياق.";
+    return "التنكير قد يفيد التعظيم أو الشمول أو التكثير أو التهويل أو التقليل، ويُحدد المقصود من خلال السياق.";
   }
 
   if (/الفعل الماضي/.test(prompt)) {
@@ -2764,7 +2763,7 @@ function buildExpandedExplanation(question) {
   }
 
   if (/التورية|موطن التورية|المعنى القريب|المعنى البعيد/.test(prompt)) {
-    return "في التورية ابحث عن لفظ له معنيان: معنى قريب ظاهر غير مراد، ومعنى بعيد خفي هو المراد. لذلك ركّز على تحديد موطن التورية أولًا، ثم ميّز بين المعنيين القريب والبعيد وفق المثال المقرر.";
+    return "في التورية ابحث عن لفظ له معنيين: معنى قريب ظاهر غير مراد، ومعنى بعيد خفي هو المراد. لذلك ركّز على تحديد موطن التورية أولًا، ثم ميّز بين المعنيين القريب والبعيد وفق المثال المقرر.";
   }
 
   if (/(استعارة|كناية|تشبيه|الصورة الفنية|الصورة البيانية|التمني|الأسلوب البلاغي|الغرض البلاغي)/.test(prompt)) {
@@ -2780,7 +2779,7 @@ function buildExpandedExplanation(question) {
   }
 
   if (/العلاقة بين|الإجمال|التفصيل|النتيجة|التعليل|التأكيد/.test(prompt)) {
-    return "في علاقات الجمل التزم فقط بالأنواع المقررة: الإجمال والتفصيل، النتيجة، التعليل، التأكيد، ثم اختر ما يلائم السياق.";
+    return "في علاقات الجمل التزم فقط بالأنواع المقررة: الإجمال والتفصيل، النتيجة، التعليل، والتأكيد فقط.";
   }
 
   if (/صح أم خطأ|صح أو خطأ/.test(prompt)) {
@@ -2800,164 +2799,12 @@ function buildExpandedExplanation(question) {
   }
 
   if (/محل الجملة|موقع الجملة|خبر إن|خبر المبتدأ|خبر كان|خبر الفعل الناسخ|جملة الحال|جملة النعت|جواب شرط|مفعولاً به|مفعول به ثان|بالإضافة|معطوفة|الابتدائية|التفسيرية|صلة الاسم الموصول|جواب القسم|شرط غير جازم|اعتراضية|ليس لها محل/.test(prompt)) {
-    return "في إعراب الجمل حدّد أولًا موقع الجملة: خبر، حال، نعت، مفعول به، جواب شرط، مضاف إليه، معطوفة، ابتدائية، تفسيرية، صلة موصول، جواب قسم، اعتراضية... ثم استخرج محلها أو سبب عدمه. فالجملة قد تكون في محل رفع أو نصب أو جر أو جزم بحسب موقعها، وقد تكون لا محل لها إذا كانت ابتدائية، أو تفسيرية، أو صلة للموصول، أو جواب قسم، أو جواب شرط غير جازم أو جازم غير مقترن بما يوجب المحل، أو اعتراضية بين أجزاء الكلام ونحو ذلك.";
-  }
-
-  if (/الهدف|الغاية|الغرض|الدافع|يدعو/.test(prompt)) {
-    return "عند تحديد الهدف أو الغاية، ابدأ الإجابة بعبارات مثل: الدعوة إلى، الحث على، التأكيد على، بيان، التحذير من، وفق سياق النص.";
-  }
-
-  if (category === "الفهم والاستيعاب") {
-    return "ركّز هنا على الفكرة العامة للنص ومعناه المباشر، ثم اربط الإجابة بالرسالة التعليمية الأساسية.";
-  }
-
-  if (category === "فنون البلاغة") {
-    return "في هذا المجال نبحث عن الصورة البلاغية أو الغرض من الأسلوب، وكيف يخدم المعنى ويقوّي التأثير.";
-  }
-
-  if (category === "السلامة اللغوية") {
-    return "راجع سلامة التركيب والدلالة اللغوية، وانتبه إلى الصياغة الأدق والأكثر انسجامًا مع القاعدة والسياق.";
-  }
-
-  return "في الثروة اللغوية ركّز على معاني المفردات والفروق الدقيقة بينها داخل السياق، وليس على الحفظ المجرد فقط.";
-}
-
-function buildExplanationNarration(question, isCorrect, teamName) {
-  const intro = isCorrect ? `أحسن ${teamName} الإجابة.` : `${teamName} يحتاج إلى مراجعة الفكرة.`;
-  return `${intro} الشرح هو: ${question.explanation}. ${buildExpandedExplanation(question)}`;
-}
-
-function provideSmartHint() {
-  if (gameState.answered || gameState.assistUsed) return;
-
-  const question = gameState.selectedQuestions[gameState.currentIndex];
-  assistantText.textContent = generateSmartHint(question);
-  gameState.assistUsed = true;
-  assistBtn.disabled = true;
-}
-
-function generateSmartHint(question) {
-  const prompt = question.prompt;
-  const category = normalizeQuestionCategory(question);
-  const hints = [];
-
-  if (category === "الفهم والاستيعاب") {
-    hints.push("ركّز على المعنى العام للنص والرسالة الأساسية، ثم اختر الإجابة الأشمل والأوضح.");
-  }
-
-  if (category === "فنون البلاغة") {
-    hints.push("ابحث عن الأسلوب أو الصورة البلاغية والغرض منها: هل تقوي المعنى أو تؤثر في المتلقي؟");
-  }
-
-  if (category === "السلامة اللغوية") {
-    hints.push("انتبه إلى الصياغة السليمة والاختيار اللغوي الأدق، واستبعد التركيب الأضعف أو الأقل انسجامًا.");
-  }
-
-  if (category === "الثروة اللغوية") {
-    hints.push("وازن بين المعاني القريبة للكلمات، واختر اللفظ الأنسب داخل السياق لا المعنى العام فقط.");
-  }
-
-  if (/الأمر/.test(prompt)) {
-    hints.push("في الأمر ابحث عن الغرض البلاغي مثل: الالتماس أو التمني أو التهديد أو التحقير أو التسوية.");
-  }
-
-  if (/النهي/.test(prompt)) {
-    hints.push("تأكد أولًا من وجود لا الناهية مع المضارع، ثم حدّد الغرض مثل الحث أو التهديد أو غيرهما.");
-  }
-
-  if (/الاستفهام التصديقي|الاستفهام التصوري|الاستفهام التعييني|أم التعيينية|الاستفهام المنفي|أليس|ألم|ألن|أما|ألا|هل.*استفهام|بلى.*نعم|نعم.*بلى/.test(prompt)) {
-    hints.push("اسأل أولًا: هل المطلوب تصديق أم تعيين أم جواب عن استفهام منفي؟");
-    hints.push("تذكّر: التصديقي جوابه نعم/لا، والتصوري جوابه بتعيين أحد الطرفين، والمنفي جوابه بلى في الإثبات ونعم في النفي.");
-  }
-
-  if (/الاستفهام/.test(prompt) && !/التصديقي|التصوري|التعييني|المنفي|أم التعيينية|بلى|هل/.test(prompt)) {
-    hints.push("لا تكتفِ بالأداة؛ بل حدّد غرض الاستفهام مثل التعظيم أو التهكم أو التسوية أو الاستبطاء.");
-  }
-
-  if (/النداء/.test(prompt)) {
-    hints.push("في النداء ابحث عن الغرض الأقرب مثل الإغراء أو الضجر أو التعظيم.");
-  }
-
-  if (/التورية|موطن التورية|المعنى القريب|المعنى البعيد/.test(prompt)) {
-    hints.push("حدّد أولًا الكلمة أو العبارة التي تحتمل معنيين؛ فهذا هو موطن التورية.");
-    hints.push("ثم ميّز بين المعنى القريب الظاهر غير المراد، والمعنى البعيد الخفي المراد.");
-  }
-
-  if (/(استعارة|كناية|تشبيه|الصورة الفنية|الصورة البيانية|التمني|الأسلوب البلاغي|الغرض البلاغي)/.test(prompt)) {
-    hints.push("اسأل نفسك: ما الغرض من هذا الأسلوب؟ أو أي عبارة من الخيارات تحقق هذا الغرض فعلًا؟ ثم اربطه بالمعنى والعاطفة.");
-  }
-
-  if (/الجملة الاسمية/.test(prompt)) {
-    hints.push("تذكّر أن الجملة الاسمية تدل غالبًا على الثبوت والاستقرار.");
-  }
-
-  if (/تنكير|نكرة/.test(prompt)) {
-    hints.push("اسأل نفسك: هل التنكير هنا للتعظيم أم للشمول أم لغيرهما؟ ثم اختر ما يسانده السياق.");
-  }
-
-  if (/الفعل الماضي/.test(prompt)) {
-    hints.push("الفعل الماضي يشير غالبًا إلى تحقق الحدث وثبوته في السياق.");
-  }
-
-  if (/الفعل المضارع/.test(prompt)) {
-    hints.push("المضارع يوحي بالتجدد والاستمرار والحركة المتجددة.");
-  }
-
-  if (/أداة الشرط|دلالة.*إذا|دلالة.*إن/.test(prompt)) {
-    hints.push("إذا مع الماضي تميل إلى تحقق ما بعدها، أما إن فتعلّق الأمر على احتمال أو شرط.");
-  }
-
-  if (/دلالة.*قد|\(قد\)/.test(prompt)) {
-    hints.push("تذكّر أن قد مع الماضي تفيد التحقيق والتوكيد غالبًا.");
-  }
-
-  if (/التكرار/.test(prompt)) {
-    hints.push("انظر هل خدم التكرار التأكيد أم التهويل أم تنويع المعنى.");
-  }
-
-  if (/الفكرة|تلخيص|عنوان|المحورية|الرئيسة|الجزئية/.test(prompt)) {
-    hints.push("صغ الفكرة في جملة اسمية واضحة من مبتدأ وخبر، تعبّر عن المعنى العام أو الجزئي للنص.");
-  }
-
-  if (/أقرب معنى|ضد كلمة|يدل على/.test(prompt)) {
-    hints.push("قارن بين دلالات الكلمات واستبعد الاختيارات البعيدة عن السياق.");
-  }
-
-  if (/الهدف|الغاية|الغرض|الدافع|يدعو/.test(prompt)) {
-    hints.push("ابدأ الإجابة بمصدر مناسب مثل: الدعوة إلى، الحث على، التأكيد على، بيان، أو التحذير من.");
-  }
-
-  if (/العلاقة بين|الإجمال|التفصيل|النتيجة|التعليل|التأكيد/.test(prompt)) {
-    hints.push("العلاقات المعتمدة هنا محصورة في: الإجمال والتفصيل، النتيجة، التعليل، والتأكيد فقط.");
-  }
-
-  if (/صح أم خطأ|صح أو خطأ/.test(prompt)) {
-    hints.push("اقرأ العبارة كاملة ثم قارنها بالنص أو القاعدة، ولا تعتمد على كلمة منفردة فقط.");
-    hints.push("إذا خالفت العبارة أصل القاعدة أو معنى النص فالإجابة: خطأ.");
-  }
-
-  if (/النسب|الاسم المنسوب|المنسوب إليه|كويتي|مصري|إسلامي|عربي|وردي|شرطي/.test(prompt)) {
-    hints.push("ابحث عن أصل الكلمة أولًا، ثم أضف ياءً مشددة في آخرها مع كسر ما قبلها إذا كان السؤال عن النسب.");
-    hints.push("ميّز دلالة النسب من السياق: وطن، دين، جنس، لون، أو حرفة.");
-  }
-
-  if (/التصغير|فُعيل|فُعيعل|فُعيعيل|مصيبيح|مسيطرة|أقيلام|أقيْلام|مصباح|مسطرة|أقلام/.test(prompt)) {
-    hints.push("حدّد عدد حروف الاسم أولًا؛ فالثلاثي له وزن، والرباعي له وزن آخر، والخماسي له وزن ثالث.");
-    hints.push("انتبه إلى أن بعض الكلمات تُعامل معاملة الثلاثي أو الرباعي، وقد يُقلب حرف العلة ياءً في بعض الأمثلة.");
-  }
-
-  if (/المدح|الذم|المخصوص|حبذا|نعم|بئس/.test(prompt)) {
-    hints.push("حدّد أولًا الفعل: نعم أو بئس أو حبذا، ثم ابحث عن الفاعل والمخصوص بالمدح أو الذم.");
-    hints.push("تذكّر: مخصوص نعم وبئس يجوز فيه وجهان، أما مع حبذا فيكون مبتدأ مؤخرًا مرفوعًا وجوبًا.");
-  }
-
-  if (/محل الجملة|موقع الجملة|خبر إن|خبر المبتدأ|خبر كان|خبر الفعل الناسخ|جملة الحال|جملة النعت|جواب شرط|مفعولاً به|مفعول به ثان|بالإضافة|معطوفة|الابتدائية|التفسيرية|صلة الاسم الموصول|جواب القسم|شرط غير جازم|اعتراضية|ليس لها محل/.test(prompt)) {
-    hints.push("حدّد موقع الجملة أولًا: خبر أم حال أم نعت أم مفعول به أم جواب شرط أم مضاف إليه أم اعتراضية...؟");
-    hints.push("ثم اسأل: هل لها محل من الإعراب أم لا؟ وما السبب النحوي في ذلك؟");
+    return "في إعراب الجمل حدّد أولًا موقع الجملة: خبر، حال، نعت، مفعول به، جواب شرط، مضاف إليه، معطوفة، ابتدائية، تفسيرية، صلة موصول، جواب قسم، اعتراضية...؟";
+    return "في إعراب الجمل حدّد أولًا موقع الجملة: خبر، حال، نعت، مفعول به، جواب شرط، مضاف إليه، معطوفة، ابتدائية، تفسيرية، صلة موصول، جواب قسم، اعتراضية...؟";
   }
 
   if (/العلاقة|القيمة|أسلوب/.test(prompt)) {
-    hints.push("ابحث عن العلاقة بين التعبير والمعنى، أو عن الأثر المقصود من الصياغة.");
+    return "ابحث عن العلاقة بين التعبير والمعنى، أو عن الأثر المقصود من الصياغة.";
   }
 
   hints.push("ابدأ باستبعاد الخيارين الأبعد عن السياق، ثم قارن بين الإجابتين الأقرب.");
@@ -3264,6 +3111,48 @@ function isTrueFalseQuestion(question) {
   return normalized.includes("صح") && normalized.includes("خطأ");
 }
 
+function generateRemixedQuestion(baseQuestions, mode = gameState.mode, lesson = gameState.lessonFilter) {
+  // فلترة الأسئلة حسب المجال والدرس
+  const pool = baseQuestions.filter((q) => matchesModeAndLesson(q));
+  if (pool.length < 2) return null;
+
+  // اختيار سؤالين عشوائيين للتركيب
+  const [q1, q2] = shuffleArray(pool).slice(0, 2);
+  // دمج نص السؤال مع جزء من سؤال آخر أو تبديل الخيارات
+  const prompt = Math.random() < 0.5
+    ? `${q1.prompt.split(".")[0]} ... ${q2.prompt.split(".")[0]}`
+    : `${q2.prompt.split(".")[0]} ... ${q1.prompt.split(".")[0]}`;
+
+  // دمج الخيارات وتوليد خيارات جديدة
+  let options = shuffleArray([
+    q1.options[q1.correctIndex],
+    q2.options[q2.correctIndex],
+    ...shuffleArray([...q1.options, ...q2.options].filter((opt, i, arr) => arr.indexOf(opt) === i && opt !== q1.options[q1.correctIndex] && opt !== q2.options[q2.correctIndex])).slice(0,2)
+  ]).slice(0,4);
+  if (options.length < 4) {
+    options = options.concat(["إجابة إضافية", "خيار آخر", "خيار جديد", "خيار مختلف"].slice(0, 4 - options.length));
+  }
+  const correctIndex = options.indexOf(q1.options[q1.correctIndex]);
+  const explanation = `هذا سؤال مركب تلقائيًا من سؤالين: \n- ${q1.prompt}\n- ${q2.prompt}\nراجع الشرحين الأصليين للإجابة.`;
+  return {
+    lesson: lesson,
+    category: q1.category,
+    prompt,
+    options,
+    correctIndex: correctIndex >= 0 ? correctIndex : 0,
+    explanation
+  };
+}
+
+function generateEndlessQuestions(baseQuestions, count, mode, lesson) {
+  const generated = [];
+  for (let i = 0; i < count; i++) {
+    const q = generateRemixedQuestion(baseQuestions, mode, lesson);
+    if (q) generated.push(q);
+  }
+  return generated;
+}
+
 function prepareQuestionsForRound(questions = [], limit = questions.length) {
   const targetCount = Math.max(0, limit);
   const shuffledQuestions = shuffleArray(questions);
@@ -3277,10 +3166,16 @@ function prepareQuestionsForRound(questions = [], limit = questions.length) {
   const remainingAfterTrueFalse = targetCount - pickedTrueFalse.length;
   const pickedMultipleChoice = multipleChoicePool.slice(0, Math.min(remainingAfterTrueFalse, multipleChoicePool.length));
 
-  const missingCount = targetCount - (pickedTrueFalse.length + pickedMultipleChoice.length);
-  const extraTrueFalse = trueFalsePool.slice(pickedTrueFalse.length, pickedTrueFalse.length + Math.max(0, missingCount));
+  let allPicked = [...pickedTrueFalse, ...pickedMultipleChoice];
+  let missingCount = targetCount - allPicked.length;
 
-  return shuffleArray([...pickedTrueFalse, ...pickedMultipleChoice, ...extraTrueFalse])
+  // إذا لم تكفِ الأسئلة الأصلية، نولّد أسئلة مركبة جديدة
+  if (missingCount > 0) {
+    const generated = generateEndlessQuestions(questions, missingCount, gameState.mode, gameState.lessonFilter);
+    allPicked = allPicked.concat(generated);
+  }
+
+  return shuffleArray(allPicked)
     .slice(0, targetCount)
     .map((question, index) => repositionCorrectAnswer(question, index % Math.max(question.options?.length || 4, 1)));
 }
