@@ -1999,6 +1999,8 @@ const lessonSelect = document.getElementById("lesson-filter");
 const lessonFilterInfo = document.getElementById("lesson-filter-info");
 const questionCountInput = document.getElementById("question-count");
 const questionCountInfo = document.getElementById("question-count-info");
+const questionFormatRatioSelect = document.getElementById("question-format-ratio");
+const questionFormatRatioInfo = document.getElementById("question-format-ratio-info");
 const startBtn = document.getElementById("start-btn");
 const nextBtn = document.getElementById("next-btn");
 const endGameBtn = document.getElementById("end-game-btn");
@@ -2101,6 +2103,7 @@ const gameState = {
   teamCount: 2,
   lessonFilter: DEFAULT_LESSON_FILTER,
   questionLimit: DEFAULT_QUESTIONS_PER_GAME,
+  trueFalseRatio: 0.3,
   teams: [],
   currentTeamIndex: -1,
   selectedQuestions: [],
@@ -2157,6 +2160,10 @@ lessonSelect?.addEventListener("change", () => {
 
 questionCountInput?.addEventListener("input", () => {
   updateQuestionCountSetting(Number(questionCountInput.value));
+});
+
+questionFormatRatioSelect?.addEventListener("change", () => {
+  updateQuestionFormatRatioSetting(Number(questionFormatRatioSelect.value));
 });
 
 schoolNameInput.addEventListener("input", updateBranding);
@@ -2690,6 +2697,22 @@ function updateQuestionCountSetting(count) {
     questionCountInfo.textContent = availableCount
       ? `سيتم طرح ${actualCount} سؤالًا من ${selectedLessonLabel}${normalizedCount > availableCount ? ` لأن المتاح حاليًا هو ${availableCount} فقط.` : "."}`
       : `لا توجد أسئلة متاحة حاليًا ضمن ${selectedLessonLabel} والمجال المختار.`;
+  }
+}
+
+function updateQuestionFormatRatioSetting(percent) {
+  const numericPercent = Number(percent);
+  const normalizedPercent = Math.min(50, Math.max(20, Number.isFinite(numericPercent) ? numericPercent : 30));
+  const ratio = normalizedPercent / 100;
+
+  gameState.trueFalseRatio = ratio;
+
+  if (questionFormatRatioSelect) {
+    questionFormatRatioSelect.value = String(normalizedPercent);
+  }
+
+  if (questionFormatRatioInfo) {
+    questionFormatRatioInfo.textContent = `النسبة الحالية: ${normalizedPercent}% صح/خطأ و${100 - normalizedPercent}% اختيار من متعدد.`;
   }
 }
 
@@ -3797,7 +3820,8 @@ function prepareQuestionsForRound(questions = [], limit = questions.length) {
   const trueFalsePool = shuffledQuestions.filter(isTrueFalseQuestion);
   const multipleChoicePool = shuffledQuestions.filter((question) => !isTrueFalseQuestion(question));
 
-  const targetTrueFalse = Math.round(targetCount * 0.3);
+  const ratio = Math.min(0.5, Math.max(0.2, Number(gameState.trueFalseRatio) || 0.3));
+  const targetTrueFalse = Math.round(targetCount * ratio);
   const pickedTrueFalse = trueFalsePool.slice(0, Math.min(targetTrueFalse, trueFalsePool.length));
 
   const remainingAfterTrueFalse = targetCount - pickedTrueFalse.length;
@@ -3869,6 +3893,7 @@ updateCompetitionMode(gameState.competitionMode);
 updateTeamCount(gameState.teamCount);
 populateStudentNames(DEFAULT_STUDENT_COUNT);
 updateLessonSelection(gameState.lessonFilter);
+updateQuestionFormatRatioSetting(Number(questionFormatRatioSelect?.value || 30));
 updateQuestionCountSetting(questionBank.filter(matchesMode).length || DEFAULT_QUESTIONS_PER_GAME);
 readBtn.disabled = !speechSupported;
 stopAudioBtn.disabled = !speechSupported;
