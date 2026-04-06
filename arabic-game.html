@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لعبة بلاغة وتفاعل</title>
+  <link rel="stylesheet" href="arabic-game.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="main-header">
+    <h1>لعبة التفاعل في اللغة العربية</h1>
+  </header>
+  <main class="main-content">
+    <section id="domainSection">
+      <h2>اختر المجال</h2>
+      <div class="domain-btns">
+        <button class="domain-btn" data-domain="comprehension">الفهم والثروة</button>
+        <button class="domain-btn" data-domain="rhetoric">البلاغة</button>
+        <button class="domain-btn" data-domain="grammar">القواعد</button>
+      </div>
+    </section>
+    <section id="branchSection" class="hidden-section">
+      <h2>اختر الفرع</h2>
+      <div class="branch-btns"></div>
+      <button id="backToDomains" class="back-btn">رجوع</button>
+    </section>
+    <section id="questionSection" class="hidden-section">
+      <h2 id="questionTitle">السؤال</h2>
+      <div id="questionArea"></div>
+      <form id="answerForm"></form>
+      <div id="resultArea"></div>
+      <button id="generateQuestionBtn" class="edit-btn hidden-btn">توليد سؤال جديد</button>
+      <button id="backToBranches" class="back-btn">رجوع</button>
+    </section>
+  </main>
+  <footer class="main-footer">
+    <span class="footer-icon" title="كتاب">&#x1F4D6;</span>
+    <span class="footer-icon" title="ريشة">&#x1F58B;&#xFE0F;</span>
+    الحقوق محفوظة " طه كامل" &copy; 2026
+  </footer>
+  <script src="arabic-game.js"></script>
+</body>
+</html>
