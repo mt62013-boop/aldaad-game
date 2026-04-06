@@ -2091,6 +2091,7 @@ const DEFAULT_LOGO_SRC = "school-logo.png";
 const GAME_LOGO_SRC = "logo-logo.png?v=2";
 const BRANDING_STORAGE_KEY = "arabic-game-branding";
 const QUESTIONS_STORAGE_KEY = "arabic-game-custom-questions";
+const ROUND_SETTINGS_STORAGE_KEY = "arabic-game-round-settings";
 const speechSupported = "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined";
 const audioContext = typeof window !== "undefined" && (window.AudioContext || window.webkitAudioContext)
   ? new (window.AudioContext || window.webkitAudioContext)()
@@ -2125,12 +2126,61 @@ const gameState = {
   categoryStats: {}
 };
 
+function saveRoundSettings() {
+  localStorage.setItem(
+    ROUND_SETTINGS_STORAGE_KEY,
+    JSON.stringify({
+      mode: gameState.mode,
+      competitionMode: gameState.competitionMode,
+      lessonFilter: gameState.lessonFilter,
+      questionLimit: gameState.questionLimit,
+      trueFalseRatio: gameState.trueFalseRatio
+    })
+  );
+}
+
+function loadSavedRoundSettings() {
+  const saved = JSON.parse(localStorage.getItem(ROUND_SETTINGS_STORAGE_KEY) || "{}");
+
+  if (["mixed", "comprehension", "rhetoric", "grammar", "lexicon"].includes(saved.mode)) {
+    gameState.mode = saved.mode;
+  }
+
+  if (["teams", "students"].includes(saved.competitionMode)) {
+    gameState.competitionMode = saved.competitionMode;
+  }
+
+  if (LESSON_LABELS[saved.lessonFilter]) {
+    gameState.lessonFilter = saved.lessonFilter;
+  }
+
+  if (Number.isFinite(Number(saved.questionLimit))) {
+    gameState.questionLimit = Math.max(1, Number(saved.questionLimit));
+  }
+
+  if (Number.isFinite(Number(saved.trueFalseRatio))) {
+    gameState.trueFalseRatio = Math.min(0.5, Math.max(0.2, Number(saved.trueFalseRatio)));
+  }
+}
+
+function updateModeSelection(modeValue) {
+  const normalizedMode = ["mixed", "comprehension", "rhetoric", "grammar", "lexicon"].includes(modeValue)
+    ? modeValue
+    : "mixed";
+
+  gameState.mode = normalizedMode;
+
+  modeButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.mode === normalizedMode);
+  });
+
+  updateQuestionCountSetting(Number(questionCountInput?.value || gameState.questionLimit));
+  saveRoundSettings();
+}
+
 modeButtons.forEach((button) => {
   button.addEventListener("click", () => {
-    modeButtons.forEach((btn) => btn.classList.remove("active"));
-    button.classList.add("active");
-    gameState.mode = button.dataset.mode;
-    updateQuestionCountSetting(Number(questionCountInput?.value || gameState.questionLimit));
+    updateModeSelection(button.dataset.mode);
   });
 });
 
@@ -2160,10 +2210,12 @@ lessonSelect?.addEventListener("change", () => {
 
 questionCountInput?.addEventListener("input", () => {
   updateQuestionCountSetting(Number(questionCountInput.value));
+  saveRoundSettings();
 });
 
 questionFormatRatioSelect?.addEventListener("change", () => {
   updateQuestionFormatRatioSetting(Number(questionFormatRatioSelect.value));
+  saveRoundSettings();
 });
 
 schoolNameInput.addEventListener("input", updateBranding);
@@ -2657,6 +2709,7 @@ function updateCompetitionMode(mode) {
   }
 
   updateQuestionCountSetting(Number(questionCountInput?.value || gameState.questionLimit));
+  saveRoundSettings();
 }
 
 function updateLessonSelection(lessonValue) {
@@ -2674,6 +2727,7 @@ function updateLessonSelection(lessonValue) {
   }
 
   updateQuestionCountSetting(Number(questionCountInput?.value || gameState.questionLimit));
+  saveRoundSettings();
 }
 
 function updateQuestionCountSetting(count) {
@@ -3888,13 +3942,15 @@ function registerPwaSupport() {
 
 loadSavedBranding();
 loadSavedQuestions();
+loadSavedRoundSettings();
 updateBranding();
+updateModeSelection(gameState.mode);
 updateCompetitionMode(gameState.competitionMode);
 updateTeamCount(gameState.teamCount);
 populateStudentNames(DEFAULT_STUDENT_COUNT);
 updateLessonSelection(gameState.lessonFilter);
-updateQuestionFormatRatioSetting(Number(questionFormatRatioSelect?.value || 30));
-updateQuestionCountSetting(questionBank.filter(matchesMode).length || DEFAULT_QUESTIONS_PER_GAME);
+updateQuestionFormatRatioSetting(Math.round((gameState.trueFalseRatio || 0.3) * 100));
+updateQuestionCountSetting(gameState.questionLimit || questionBank.filter(matchesMode).length || DEFAULT_QUESTIONS_PER_GAME);
 readBtn.disabled = !speechSupported;
 stopAudioBtn.disabled = !speechSupported;
 renderLeaderboard();
