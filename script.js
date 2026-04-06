@@ -141,6 +141,7 @@ const installAppBtn = document.getElementById("install-app-btn");
 const leaderboardList = document.getElementById("leaderboard-list");
 
 let deferredInstallPrompt = null;
+let pendingRoundResume = null;
 
 const playerLabel = document.getElementById("player-label");
 const lessonTitleDisplay = document.getElementById("lesson-title-display");
@@ -284,6 +285,8 @@ const QUESTIONS_STORAGE_KEY = "arabic-game-custom-questions";
 const ROUND_SETTINGS_STORAGE_KEY = "arabic-game-round-settings";
 const TEACHER_AUTH_STORAGE_KEY = "arabic-game-teacher-auth";
 const TEACHER_SESSION_STORAGE_KEY = "arabic-game-teacher-session";
+const ACTIVE_ROUND_STORAGE_KEY = "arabic-game-active-round";
+const ACTIVE_ROUND_MAX_AGE_MS = 1000 * 60 * 60 * 12;
 const speechSupported = "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined";
 const audioContext = typeof window !== "undefined" && (window.AudioContext || window.webkitAudioContext)
   ? new (window.AudioContext || window.webkitAudioContext)()
@@ -324,8 +327,10 @@ function saveRoundSettings() {
   localStorage.setItem(
     ROUND_SETTINGS_STORAGE_KEY,
     JSON.stringify({
+      playerName: playerNameInput?.value.trim() || "",
       mode: gameState.mode,
       competitionMode: gameState.competitionMode,
+      teamCount: gameState.teamCount,
       lessonFilter: gameState.lessonFilter,
       subLessonFilter: gameState.subLessonFilter,
       questionLimit: gameState.questionLimit,
@@ -338,12 +343,20 @@ function saveRoundSettings() {
 function loadSavedRoundSettings() {
   const saved = JSON.parse(localStorage.getItem(ROUND_SETTINGS_STORAGE_KEY) || "{}");
 
+  if (typeof saved.playerName === "string" && playerNameInput) {
+    playerNameInput.value = saved.playerName;
+  }
+
   if (["mixed", "comprehension", "rhetoric", "grammar", "lexicon"].includes(saved.mode)) {
     gameState.mode = saved.mode;
   }
 
   if (["teams", "students"].includes(saved.competitionMode)) {
     gameState.competitionMode = saved.competitionMode;
+  }
+
+  if (Number.isFinite(Number(saved.teamCount))) {
+    gameState.teamCount = Math.max(2, Math.min(TEAM_LABELS.length, Number(saved.teamCount)));
   }
 
   if (LESSON_LABELS[saved.lessonFilter]) {
@@ -365,6 +378,170 @@ function loadSavedRoundSettings() {
   if (typeof saved.calmMode === "boolean") {
     gameState.calmMode = saved.calmMode;
   }
+}
+
+function clearSavedActiveRound() {
+  localStorage.removeItem(ACTIVE_ROUND_STORAGE_KEY);
+  pendingRoundResume = null;
+}
+
+function getSavedActiveRound() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(ACTIVE_ROUND_STORAGE_KEY) || "null");
+    if (!saved || typeof saved !== "object") {
+      return null;
+    }
+
+    if (saved.role !== SESSION_ROLE) {
+      return null;
+    }
+
+    if (!IS_CONTESTANT_VIEW && !isTeacherAuthenticated()) {
+      return null;
+    }
+
+    const savedAt = Number(saved.savedAt) || 0;
+    if (savedAt && Date.now() - savedAt > ACTIVE_ROUND_MAX_AGE_MS) {
+      clearSavedActiveRound();
+      return null;
+    }
+
+    if (!Array.isArray(saved.selectedQuestions) || !saved.selectedQuestions.length) {
+      return null;
+    }
+
+    if (!Array.isArray(saved.teams) || !saved.teams.length) {
+      return null;
+    }
+
+    return saved;
+  } catch (error) {
+    console.warn("Unable to read active round:", error);
+    clearSavedActiveRound();
+    return null;
+  }
+}
+
+function rememberPendingRoundResume() {
+  pendingRoundResume = getSavedActiveRound();
+  return pendingRoundResume;
+}
+
+function saveActiveRound() {
+  if (!Array.isArray(gameState.selectedQuestions) || !gameState.selectedQuestions.length) return;
+  if (!Array.isArray(gameState.teams) || !gameState.teams.length) return;
+
+  try {
+    localStorage.setItem(
+      ACTIVE_ROUND_STORAGE_KEY,
+      JSON.stringify({
+        role: SESSION_ROLE,
+        savedAt: Date.now(),
+        playerName: gameState.playerName,
+        mode: gameState.mode,
+        competitionMode: gameState.competitionMode,
+        teamCount: gameState.teamCount,
+        lessonFilter: gameState.lessonFilter,
+        subLessonFilter: gameState.subLessonFilter,
+        questionLimit: gameState.questionLimit,
+        trueFalseRatio: gameState.trueFalseRatio,
+        calmMode: !!gameState.calmMode,
+        teams: gameState.teams.map((team) => ({ ...team })),
+        selectedQuestions: gameState.selectedQuestions,
+        currentIndex: gameState.currentIndex,
+        roundParticipantIndex: gameState.roundParticipantIndex,
+        score: gameState.score,
+        correctAnswers: gameState.correctAnswers,
+        answered: !!gameState.answered,
+        categoryStats: gameState.categoryStats
+      })
+    );
+  } catch (error) {
+    console.warn("Unable to save active round:", error);
+  }
+}
+
+function populateParticipantsFromSavedRound(snapshot) {
+  if (!snapshot || !Array.isArray(snapshot.teams)) return;
+
+  if (playerNameInput && snapshot.playerName) {
+    playerNameInput.value = snapshot.playerName;
+  }
+
+  if (snapshot.competitionMode === "students") {
+    const savedNames = snapshot.teams.map((participant) => participant.name).filter(Boolean);
+    const totalStudents = Math.max(DEFAULT_STUDENT_COUNT, Math.min(MAX_STUDENTS, savedNames.length || 1));
+
+    if (studentCountSelect) {
+      studentCountSelect.value = String(totalStudents);
+    }
+
+    populateStudentNames(totalStudents);
+    if (studentNamesInput) {
+      studentNamesInput.value = savedNames.join("\n");
+    }
+    return;
+  }
+
+  const teamCount = Math.max(2, Math.min(TEAM_LABELS.length, Number(snapshot.teamCount) || snapshot.teams.length || 2));
+  updateTeamCount(teamCount);
+  teamNameInputs.forEach((input, index) => {
+    input.value = snapshot.teams[index]?.name || TEAM_LABELS[index];
+  });
+}
+
+function restoreSavedActiveRound(snapshot = pendingRoundResume) {
+  if (!snapshot) return false;
+
+  pendingRoundResume = null;
+  hideTeacherStartSettings();
+
+  updateModeSelection(snapshot.mode || gameState.mode);
+  updateCompetitionMode(snapshot.competitionMode || gameState.competitionMode);
+  updateLessonSelection(snapshot.lessonFilter || gameState.lessonFilter);
+  updateSubLessonSelection(snapshot.subLessonFilter || gameState.subLessonFilter);
+  updateQuestionFormatRatioSetting(Math.round((Number(snapshot.trueFalseRatio) || gameState.trueFalseRatio || 0.3) * 100));
+  updateQuestionCountSetting(Number(snapshot.questionLimit) || gameState.questionLimit);
+  applyCalmMode(!!snapshot.calmMode);
+  populateParticipantsFromSavedRound(snapshot);
+
+  const clonedQuestions = snapshot.selectedQuestions.map((question) => ({
+    ...question,
+    options: Array.isArray(question.options) ? [...question.options] : []
+  }));
+
+  gameState.playerName = snapshot.playerName || gameState.playerName;
+  gameState.teamCount = Math.max(2, Math.min(TEAM_LABELS.length, Number(snapshot.teamCount) || snapshot.teams.length || 2));
+  gameState.teams = snapshot.teams.map((participant) => ({
+    name: participant.name || "مشارك",
+    score: Number(participant.score) || 0,
+    correct: Number(participant.correct) || 0
+  }));
+  gameState.selectedQuestions = clonedQuestions;
+  gameState.currentIndex = Math.max(0, Math.min(Number(snapshot.currentIndex) || 0, clonedQuestions.length - 1));
+  gameState.roundParticipantIndex = Math.max(0, Number(snapshot.roundParticipantIndex) || 0);
+  gameState.score = Number(snapshot.score) || gameState.teams.reduce((sum, team) => sum + (Number(team.score) || 0), 0);
+  gameState.correctAnswers = Math.max(0, Number(snapshot.correctAnswers) || 0);
+  gameState.categoryStats = snapshot.categoryStats && typeof snapshot.categoryStats === "object"
+    ? snapshot.categoryStats
+    : {};
+
+  if (snapshot.answered && gameState.currentIndex >= gameState.selectedQuestions.length - 1) {
+    finishGame({ skipLeaderboardSave: true });
+    return true;
+  }
+
+  if (snapshot.answered) {
+    gameState.currentIndex = Math.min(gameState.currentIndex + 1, gameState.selectedQuestions.length - 1);
+  }
+
+  renderTargetOptions();
+  renderTeamsBoard();
+  showScreen("game");
+  renderQuestion();
+  assistantText.textContent = `المساعد الذكي: تم استئناف الجولة السابقة تلقائيًا من السؤال ${gameState.currentIndex + 1}.`;
+  saveActiveRound();
+  return true;
 }
 
 function getModeLabel(mode = gameState.mode) {
@@ -584,7 +761,10 @@ questionFormatRatioSelect?.addEventListener("change", () => {
   saveRoundSettings();
 });
 
-playerNameInput?.addEventListener("input", syncContestantStartAvailability);
+playerNameInput?.addEventListener("input", () => {
+  syncContestantStartAvailability();
+  saveRoundSettings();
+});
 authRegisterBtn?.addEventListener("click", registerTeacherAccount);
 authLoginBtn?.addEventListener("click", loginTeacherAccount);
 authForgotBtn?.addEventListener("click", toggleAuthRecoveryPanel);
@@ -622,6 +802,7 @@ document.addEventListener("keydown", (event) => {
   }
 });
 restartBtn.addEventListener("click", () => {
+  clearSavedActiveRound();
   hideTeacherStartSettings();
   showScreen("start");
 });
@@ -762,6 +943,13 @@ function beginOpeningSequence() {
   gameState.openingSequenceId = window.setTimeout(() => {
     const nextScreenName = getInitialScreenName();
     showScreen(nextScreenName);
+
+    if (nextScreenName === "game" && pendingRoundResume) {
+      window.setTimeout(() => {
+        restoreSavedActiveRound();
+      }, SCREEN_TRANSITION_MS + 20);
+      return;
+    }
 
     if (nextScreenName === "start") {
       scheduleAutoIntroMusic();
@@ -1294,6 +1482,7 @@ function updateTeamCount(count) {
 
 function startGame() {
   const inputName = playerNameInput.value.trim();
+  saveRoundSettings();
   gameState.playerName = IS_CONTESTANT_VIEW
     ? (SHARED_SESSION_TITLE || "جلسة الضاد")
     : (inputName || "حصة اللغة العربية");
@@ -1372,6 +1561,7 @@ function startGame() {
   }
 
   updateQuestionCountSetting(Number(questionCountInput?.value || gameState.questionLimit));
+  clearSavedActiveRound();
   const totalQuestionsForRound = Math.min(gameState.questionLimit, filtered.length);
   gameState.selectedQuestions = prepareQuestionsForRound(filtered, totalQuestionsForRound);
 
@@ -1512,7 +1702,19 @@ function revealTeacherStartSettings() {
 function launchTeacherInstantRound() {
   if (IS_CONTESTANT_VIEW) return;
 
+  const savedRound = getSavedActiveRound();
   hideTeacherStartSettings();
+
+  if (savedRound) {
+    pendingRoundResume = savedRound;
+    showScreen("game");
+
+    window.setTimeout(() => {
+      restoreSavedActiveRound(savedRound);
+    }, SCREEN_TRANSITION_MS + 40);
+    return;
+  }
+
   showScreen("start");
 
   window.setTimeout(() => {
@@ -1686,6 +1888,10 @@ function syncTeacherAuthView() {
 }
 
 function getInitialScreenName() {
+  if (pendingRoundResume) {
+    return "game";
+  }
+
   if (IS_CONTESTANT_VIEW || isTeacherAuthenticated()) {
     return "start";
   }
@@ -1746,6 +1952,7 @@ function registerTeacherAccount() {
   }
 
   localStorage.setItem(TEACHER_AUTH_STORAGE_KEY, JSON.stringify({ username, password, recoveryMethod, recoveryCountry, recoveryValue }));
+  setTeacherAuthenticated(true);
   schoolNameInput.value = schoolName;
   teacherNameInput.value = teacherName;
 
@@ -1754,8 +1961,11 @@ function registerTeacherAccount() {
   }
 
   updateBranding();
-  setTeacherAuthenticated(true);
   syncTeacherAuthView();
+  authRecoveryPanel?.classList.add("hidden");
+  if (authForgotBtn) {
+    authForgotBtn.textContent = "نسيت اسم المستخدم أو كلمة المرور";
+  }
 
   if (authLoginUsernameInput) {
     authLoginUsernameInput.value = username;
@@ -1780,16 +1990,18 @@ function loginTeacherAccount() {
   }
 
   if (username !== storedAccount.username || password !== storedAccount.password) {
-    setAuthStatus("اسم المستخدم أو كلمة المرور غير صحيحين. حاول مرة أخرى.", "error");
+    setAuthStatus("اسم المستخدم أو كلمة المرور غير صحيحة.", "error");
     authLoginPasswordInput?.focus();
     return;
   }
 
   setTeacherAuthenticated(true);
+  syncTeacherAuthView();
   authRecoveryPanel?.classList.add("hidden");
   if (authForgotBtn) {
     authForgotBtn.textContent = "نسيت اسم المستخدم أو كلمة المرور";
   }
+  authLoginPasswordInput && (authLoginPasswordInput.value = "");
   setAuthStatus("تم تسجيل دخول المعلم بنجاح، وجارٍ فتح الجولة مباشرة.", "success");
   launchTeacherInstantRound();
 }
@@ -2010,6 +2222,7 @@ function changeTeacherPassword() {
 
 function logoutTeacher() {
   setTeacherAuthenticated(false);
+  clearSavedActiveRound();
   passwordPanel?.classList.add("hidden");
   recoveryUpdatePanel?.classList.add("hidden");
   authRecoveryPanel?.classList.add("hidden");
@@ -2312,6 +2525,8 @@ function renderQuestion() {
       lockAnswer(-1);
     }
   }, 1000);
+
+  saveActiveRound();
 }
 
 function playTone(frequency, duration, type = "sine", volume = 0.03) {
@@ -2836,6 +3051,7 @@ function lockAnswer(selectedIndex) {
     ? "اعرض النتيجة"
     : "السؤال التالي";
   nextBtn.classList.remove("hidden");
+  saveActiveRound();
 }
 
 function goToNextQuestion() {
@@ -2855,8 +3071,11 @@ function closeEndGameModal() {
   confirmModal.classList.add("hidden");
 }
 
-function finishGame() {
+function finishGame(options = {}) {
+  const { skipLeaderboardSave = false } = options;
+
   clearInterval(gameState.timerId);
+  clearSavedActiveRound();
   const totalQuestions = gameState.selectedQuestions.length || 1;
   const percent = Math.round((gameState.correctAnswers / totalQuestions) * 100);
   const ranking = [...gameState.teams].sort((a, b) => b.score - a.score || b.correct - a.correct);
@@ -2885,11 +3104,13 @@ function finishGame() {
   renderFinalRanking(ranking, totalQuestions);
   renderWinnerCertificate(winner, lessonTitle);
 
-  saveLeaderboard({
-    name: `${winner.name} — ${gameState.playerName}`,
-    score: winner.score,
-    percent
-  });
+  if (!skipLeaderboardSave) {
+    saveLeaderboard({
+      name: `${winner.name} — ${gameState.playerName}`,
+      score: winner.score,
+      percent
+    });
+  }
   renderLeaderboard();
   showScreen("result");
   playWinnerAnnouncement();
@@ -3130,6 +3351,7 @@ async function initializeApp() {
   hideTeacherStartSettings();
   updateBranding();
   syncTeacherAuthView();
+  rememberPendingRoundResume();
   updateModeSelection(gameState.mode);
   updateCompetitionMode(gameState.competitionMode);
   updateTeamCount(gameState.teamCount);
