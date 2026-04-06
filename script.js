@@ -136,6 +136,10 @@ const directorNote = document.getElementById("director-note");
 const connectionBanner = document.getElementById("connection-banner");
 const installSplash = document.getElementById("install-splash");
 const installSplashMessage = document.getElementById("install-splash-message");
+const sessionUrlParams = new URLSearchParams(window.location.search);
+const SESSION_ROLE = sessionUrlParams.get("role") === "contestant" ? "contestant" : "teacher";
+const IS_CONTESTANT_VIEW = SESSION_ROLE === "contestant";
+const SHARED_SESSION_TITLE = (sessionUrlParams.get("className") || "").trim();
 
 const resultTitle = document.getElementById("result-title");
 const resultSummary = document.getElementById("result-summary");
@@ -288,6 +292,157 @@ function loadSavedRoundSettings() {
   if (Number.isFinite(Number(saved.trueFalseRatio))) {
     gameState.trueFalseRatio = Math.min(0.5, Math.max(0.2, Number(saved.trueFalseRatio)));
   }
+}
+
+function getModeLabel(mode = gameState.mode) {
+  return ({
+    mixed: "مجالات متنوعة",
+    comprehension: "الفهم والاستيعاب",
+    rhetoric: "فنون البلاغة",
+    grammar: "السلامة اللغوية",
+    lexicon: "الثروة اللغوية"
+  })[mode] || "مجالات متنوعة";
+}
+
+function applySessionConfigFromUrl() {
+  const sharedSchool = (sessionUrlParams.get("school") || "").trim();
+  const sharedTeacher = (sessionUrlParams.get("teacher") || "").trim();
+  const sharedLogo = (sessionUrlParams.get("logo") || "").trim();
+  const mode = (sessionUrlParams.get("mode") || "").trim();
+  const competition = (sessionUrlParams.get("competition") || "").trim();
+  const lesson = (sessionUrlParams.get("lesson") || "").trim();
+  const subLesson = (sessionUrlParams.get("subLesson") || "").trim();
+  const count = Number(sessionUrlParams.get("count"));
+  const ratio = Number(sessionUrlParams.get("ratio"));
+
+  if (sharedSchool) {
+    schoolNameInput.value = sharedSchool;
+  }
+
+  if (sharedTeacher) {
+    teacherNameInput.value = sharedTeacher;
+  }
+
+  if (!IS_CONTESTANT_VIEW && SHARED_SESSION_TITLE) {
+    playerNameInput.value = SHARED_SESSION_TITLE;
+  }
+
+  if (sharedLogo) {
+    schoolLogoImage.src = sharedLogo;
+  }
+
+  if (["mixed", "comprehension", "rhetoric", "grammar", "lexicon"].includes(mode)) {
+    gameState.mode = mode;
+  }
+
+  if (["teams", "students"].includes(competition)) {
+    gameState.competitionMode = competition;
+  }
+
+  if (LESSON_LABELS[lesson]) {
+    gameState.lessonFilter = lesson;
+  }
+
+  if (ALL_SUB_LESSON_VALUES.has(subLesson)) {
+    gameState.subLessonFilter = subLesson;
+  }
+
+  if (Number.isFinite(count)) {
+    gameState.questionLimit = Math.min(MAX_QUESTIONS_PER_GAME, Math.max(1, count));
+  }
+
+  if (Number.isFinite(ratio)) {
+    gameState.trueFalseRatio = Math.min(0.5, Math.max(0.2, ratio / 100));
+  }
+}
+
+function applyRolePermissions() {
+  document.body.classList.toggle("contestant-view", IS_CONTESTANT_VIEW);
+
+  if (!IS_CONTESTANT_VIEW) {
+    return;
+  }
+
+  const playerNameLabel = document.querySelector('label[for="player-name"]');
+  const startScreenHeading = document.querySelector("#start-screen h2");
+  const startScreenNote = document.querySelector(".start-screen-note");
+  const teacherOnlySections = [
+    document.querySelector(".session-share-box"),
+    ...document.querySelectorAll(".start-optional"),
+    document.querySelector(".competition-mode-picker")?.closest(".field-group"),
+    teamSetupSection,
+    studentSetupSection,
+    document.querySelector(".mode-picker")?.closest(".field-group"),
+    subLessonSelect?.closest(".field-group"),
+    lessonSelect?.closest(".field-group"),
+    questionCountInput?.closest(".field-group"),
+    questionFormatRatioSelect?.closest(".field-group"),
+    directorPanel
+  ];
+
+  teacherOnlySections.filter(Boolean).forEach((section) => {
+    section.classList.add("hidden");
+    section.setAttribute("aria-hidden", "true");
+    section.querySelectorAll("input, select, textarea, button").forEach((control) => {
+      control.disabled = true;
+    });
+  });
+
+  if (endGameBtn) {
+    endGameBtn.classList.add("hidden");
+  }
+
+  if (startScreenHeading) {
+    startScreenHeading.textContent = "شاشة المتسابق";
+  }
+
+  if (playerNameLabel) {
+    playerNameLabel.textContent = gameState.competitionMode === "teams" ? "اسم الفريق أو المتسابق" : "اسم الطالب المتسابق";
+  }
+
+  if (playerNameInput) {
+    playerNameInput.value = "";
+    playerNameInput.placeholder = gameState.competitionMode === "teams"
+      ? "اكتب اسم الفريق أو المشارك"
+      : "اكتب اسمك هنا";
+  }
+
+  if (startScreenNote) {
+    const sessionLabel = SHARED_SESSION_TITLE ? `الجلسة: ${SHARED_SESSION_TITLE}. ` : "";
+    startScreenNote.textContent = `${sessionLabel}هذه شاشة مستقلة للمتسابق فقط. صلاحيتك تقتصر على كتابة الاسم ثم الإجابة عن الأسئلة ومشاهدة النتيجة النهائية، بينما يبقى التحكم الكامل للمعلم في إعدادات المسابقة.`;
+  }
+
+  if (sessionLinkStatus) {
+    sessionLinkStatus.textContent = `تم تجهيز هذه الشاشة كواجهة متسابق، والإعدادات الحالية مضبوطة من قبل المعلم: ${getModeLabel(gameState.mode)} — ${LESSON_LABELS[gameState.lessonFilter] || LESSON_LABELS[DEFAULT_LESSON_FILTER]}.`;
+  }
+
+  if (startBtn) {
+    startBtn.textContent = "ابدأ المنافسة";
+  }
+}
+
+function buildSessionLink() {
+  const sessionLink = new URL(window.location.href);
+  const savedBranding = JSON.parse(localStorage.getItem(BRANDING_STORAGE_KEY) || "{}");
+
+  sessionLink.search = "";
+  sessionLink.hash = "";
+  sessionLink.searchParams.set("role", "contestant");
+  sessionLink.searchParams.set("className", playerNameInput.value.trim() || "حصة اللغة العربية");
+  sessionLink.searchParams.set("school", schoolNameInput.value.trim() || DEFAULT_SCHOOL_NAME);
+  sessionLink.searchParams.set("teacher", teacherNameInput.value.trim() || DEFAULT_TEACHER_NAME);
+  sessionLink.searchParams.set("mode", gameState.mode);
+  sessionLink.searchParams.set("competition", gameState.competitionMode);
+  sessionLink.searchParams.set("lesson", gameState.lessonFilter);
+  sessionLink.searchParams.set("subLesson", gameState.subLessonFilter || "all");
+  sessionLink.searchParams.set("count", String(gameState.questionLimit || DEFAULT_QUESTIONS_PER_GAME));
+  sessionLink.searchParams.set("ratio", String(Math.round((gameState.trueFalseRatio || 0.3) * 100)));
+
+  if (typeof savedBranding.customLogo === "string" && savedBranding.customLogo && savedBranding.customLogo.length < 1800) {
+    sessionLink.searchParams.set("logo", savedBranding.customLogo);
+  }
+
+  return sessionLink.toString();
 }
 
 function updateModeSelection(modeValue) {
@@ -843,7 +998,7 @@ function updateCompetitionMode(mode) {
 
   teamSetupSection?.classList.toggle("hidden", gameState.competitionMode !== "teams");
   studentSetupSection?.classList.toggle("hidden", gameState.competitionMode !== "students");
-  scoreCaption.textContent = gameState.competitionMode === "students" ? "نقاط الطالب" : "نقاط الفريق";
+  scoreCaption.textContent = IS_CONTESTANT_VIEW ? "نقاط المتسابق" : gameState.competitionMode === "students" ? "نقاط الطالب" : "نقاط الفريق";
 
   if (gameState.competitionMode === "students") {
     populateStudentNames(Number(studentCountSelect?.value || DEFAULT_STUDENT_COUNT));
@@ -1045,7 +1200,9 @@ function updateTeamCount(count) {
 
 function startGame() {
   const inputName = playerNameInput.value.trim();
-  gameState.playerName = inputName || "حصة اللغة العربية";
+  gameState.playerName = IS_CONTESTANT_VIEW
+    ? (SHARED_SESSION_TITLE || "جلسة الضاد")
+    : (inputName || "حصة اللغة العربية");
   gameState.currentIndex = 0;
   gameState.roundParticipantIndex = 0;
   gameState.currentTeamIndex = -1;
@@ -1053,7 +1210,19 @@ function startGame() {
   gameState.correctAnswers = 0;
   gameState.categoryStats = {};
 
-  if (gameState.competitionMode === "teams") {
+  if (IS_CONTESTANT_VIEW) {
+    if (!inputName) {
+      setQuestionEditorStatus("اكتب اسم المتسابق قبل بدء الجولة.", "error");
+      playerNameInput.focus();
+      return;
+    }
+
+    gameState.teams = [{
+      name: inputName,
+      score: 0,
+      correct: 0
+    }];
+  } else if (gameState.competitionMode === "teams") {
     const emptyTeam = teamNameInputs.slice(0, 2).find((input) => !input.value.trim());
     if (emptyTeam) {
       setQuestionEditorStatus("اكتب اسم الفريق الأول والثاني قبل بدء اللعبة.", "error");
@@ -1073,7 +1242,9 @@ function startGame() {
     }
   }
 
-  gameState.teams = buildParticipants();
+  if (!IS_CONTESTANT_VIEW) {
+    gameState.teams = buildParticipants();
+  }
 
   const filtered = questionBank.filter(matchesMode);
   if (!filtered.length) {
@@ -1096,7 +1267,7 @@ function startGame() {
     assistantText.textContent = `تم تجهيز ${totalQuestionsForRound} سؤالًا لأن المتاح في الدرس أو المجال المختار أقل من العدد المطلوب.`;
   }
 
-  scoreCaption.textContent = gameState.competitionMode === "students" ? "نقاط الطالب" : "نقاط الفريق";
+  scoreCaption.textContent = IS_CONTESTANT_VIEW ? "نقاط المتسابق" : gameState.competitionMode === "students" ? "نقاط الطالب" : "نقاط الفريق";
   renderTargetOptions();
   renderTeamsBoard();
   showScreen("game");
@@ -1302,6 +1473,10 @@ function applyRandomTarget() {
 }
 
 function getCompetitionNouns() {
+  if (IS_CONTESTANT_VIEW) {
+    return { singular: "المتسابق", plural: "المتسابقين", boardTitle: "نتيجة المتسابق" };
+  }
+
   return gameState.competitionMode === "students"
     ? { singular: "الطالب", plural: "الطلاب", boardTitle: "ترتيب الطلاب" }
     : { singular: "الفريق", plural: "فريقين", boardTitle: "ترتيب الفريقين" };
@@ -1348,9 +1523,11 @@ function renderQuestion() {
     fastestNameInput.value = "";
   }
   updateBuzzLockUI();
-  assistantText.textContent = gameState.competitionMode === "students"
-    ? "السؤال الآن ظاهر لجميع الطلاب في الجلسة نفسها، وستُحتسب النقاط لصاحب الإجابة الأسرع."
-    : "السؤال الآن ظاهر للفريقين. سجّل اسم الأسرع أولًا ثم اختر الإجابة لحساب النقاط له.";
+  assistantText.textContent = IS_CONTESTANT_VIEW
+    ? "أجب عن السؤال مباشرة ضمن الوقت المحدد، وستظهر نتيجتك النهائية بعد انتهاء الجولة."
+    : gameState.competitionMode === "students"
+      ? "السؤال الآن ظاهر لجميع الطلاب في الجلسة نفسها، وستُحتسب النقاط لصاحب الإجابة الأسرع."
+      : "السؤال الآن ظاهر للفريقين. سجّل اسم الأسرع أولًا ثم اختر الإجابة لحساب النقاط له.";
 
   const question = gameState.selectedQuestions[gameState.currentIndex];
   renderTargetOptions();
@@ -1362,9 +1539,11 @@ function renderQuestion() {
   categoryTag.textContent = question.category;
 
   if (directorNote) {
-    directorNote.textContent = gameState.competitionMode === "students"
-      ? "الطلاب في الجلسة يرون السؤال نفسه الآن. سجّل اسم الطالب الأسرع أو اضغط على اسمه من القائمة لحساب النقاط له، سواء كانت الحصة عن بُعد أو حضورية."
-      : "السؤال نفسه ظاهر للفريقين. سجّل اسم الفريق الأسرع أو اضغط على اسمه في اللوحة ثم اختر الإجابة.";
+    directorNote.textContent = IS_CONTESTANT_VIEW
+      ? "وضع المتسابق مفعل: يمكنك الإجابة مباشرة دون أي أدوات تحكم خاصة بالمعلم."
+      : gameState.competitionMode === "students"
+        ? "الطلاب في الجلسة يرون السؤال نفسه الآن. سجّل اسم الطالب الأسرع أو اضغط على اسمه من القائمة لحساب النقاط له، سواء كانت الحصة عن بُعد أو حضورية."
+        : "السؤال نفسه ظاهر للفريقين. سجّل اسم الفريق الأسرع أو اضغط على اسمه في اللوحة ثم اختر الإجابة.";
   }
   questionText.textContent = question.prompt;
   gameState.lastNarration = buildQuestionNarration(question);
@@ -1381,11 +1560,26 @@ function renderQuestion() {
     answersContainer.appendChild(button);
   });
 
-  setAnswerButtonsEnabled(false);
+  if (IS_CONTESTANT_VIEW && gameState.teams.length) {
+    gameState.currentTeamIndex = 0;
+    gameState.buzzLocked = true;
 
-  if (gameState.competitionMode === "students" && gameState.teams.length) {
+    const contestant = getCurrentTeam();
+    if (fastestNameInput) {
+      fastestNameInput.value = contestant.name;
+    }
+
+    playerLabel.textContent = contestant.name;
+    scoreLabel.textContent = String(contestant.score);
     updateBuzzLockUI();
+    setAnswerButtonsEnabled(true);
+  } else {
     setAnswerButtonsEnabled(false);
+
+    if (gameState.competitionMode === "students" && gameState.teams.length) {
+      updateBuzzLockUI();
+      setAnswerButtonsEnabled(false);
+    }
   }
 
   gameState.timerId = setInterval(() => {
@@ -1558,15 +1752,17 @@ async function copySessionLink() {
   if (!sessionLinkStatus) return;
 
   if (window.location.protocol === "file:") {
-    sessionLinkStatus.textContent = "للتعليم عن بُعد افتح نسخة GitHub Pages أو رابط الويب ثم انسخه وشاركه مع الطلاب.";
+    sessionLinkStatus.textContent = "للتعليم عن بُعد افتح نسخة GitHub Pages أو رابط الويب ثم انسخ رابط شاشة المتسابقين وشاركه معهم.";
     return;
   }
 
+  const sessionLink = buildSessionLink();
+
   try {
-    await navigator.clipboard.writeText(window.location.href);
-    sessionLinkStatus.textContent = "تم نسخ رابط الجلسة بنجاح. أرسله الآن للطلاب عبر المنصة المناسبة.";
+    await navigator.clipboard.writeText(sessionLink);
+    sessionLinkStatus.textContent = "تم نسخ رابط شاشة المتسابقين بنجاح. أرسله الآن للطلاب أو الفرق، وستبقى صلاحيات الإعداد محصورة بالمعلم.";
   } catch {
-    sessionLinkStatus.textContent = `رابط الجلسة الحالي: ${window.location.href}`;
+    sessionLinkStatus.textContent = `رابط شاشة المتسابقين: ${sessionLink}`;
   }
 }
 
@@ -1945,10 +2141,14 @@ function finishGame() {
   finalCorrect.textContent = `${winner.correct} / ${totalQuestions}`;
   finalPercent.textContent = `${percent}%`;
 
-  resultTitle.textContent = `${competitionNouns.singular} الفائز: ${winner.name}`;
-  resultSummary.textContent = gameState.competitionMode === "students"
-    ? `${gameState.playerName} انتهت بمشاركة ${gameState.teams.length} طلاب في الجلسة نفسها، وتصدر ${winner.name} النتائج بإجمالي ${winner.score} نقطة ونسبة ${Math.round((winner.correct / totalQuestions) * 100)}%.`
-    : `${gameState.playerName} انتهت بفوز ${winner.name} بعد منافسة بين فريقين، بإجمالي ${gameState.score} نقطة و${gameState.correctAnswers} إجابات صحيحة من أصل ${totalQuestions}.`;
+  resultTitle.textContent = IS_CONTESTANT_VIEW
+    ? `نتيجتك النهائية: ${winner.name}`
+    : `${competitionNouns.singular} الفائز: ${winner.name}`;
+  resultSummary.textContent = IS_CONTESTANT_VIEW
+    ? `${winner.name} أنهى الجولة الخاصة بـ ${gameState.playerName} وحقق ${winner.score} نقطة بنسبة ${Math.round((winner.correct / totalQuestions) * 100)}%.`
+    : gameState.competitionMode === "students"
+      ? `${gameState.playerName} انتهت بمشاركة ${gameState.teams.length} طلاب في الجلسة نفسها، وتصدر ${winner.name} النتائج بإجمالي ${winner.score} نقطة ونسبة ${Math.round((winner.correct / totalQuestions) * 100)}%.`
+      : `${gameState.playerName} انتهت بفوز ${winner.name} بعد منافسة بين فريقين، بإجمالي ${gameState.score} نقطة و${gameState.correctAnswers} إجابات صحيحة من أصل ${totalQuestions}.`;
   recommendationText.textContent = buildRecommendation(percent, winner.name);
   const lessonTitle = DEFAULT_LESSON_TITLE;
   gameState.winnerAnnouncement = `مبارك لـ${competitionNouns.singular} الفائز: ${winner.name}. لقد حقق ${winner.score} نقطة في لعبة ${lessonTitle}. أحسنتم جميعًا.`;
@@ -1999,7 +2199,7 @@ function renderWinnerCertificate(winner, lessonTitle) {
 
 function buildRecommendation(percent, winnerName) {
   const bestCategory = getBestCategory();
-  const participantsLabel = gameState.competitionMode === "students" ? "الطلاب" : "الفريقين";
+  const participantsLabel = IS_CONTESTANT_VIEW ? "المتسابق" : gameState.competitionMode === "students" ? "الطلاب" : "الفريقين";
 
   if (percent >= 85) {
     return `أداء الصف ممتاز جدًا، وتصدر ${winnerName} المنافسة. أقوى جانب ظاهر في الجولة هو: ${bestCategory}.`;
@@ -2189,6 +2389,7 @@ async function initializeApp() {
   loadSavedBranding();
   await loadSavedQuestions();
   loadSavedRoundSettings();
+  applySessionConfigFromUrl();
   updateBranding();
   updateModeSelection(gameState.mode);
   updateCompetitionMode(gameState.competitionMode);
@@ -2198,6 +2399,7 @@ async function initializeApp() {
   updateSubLessonSelection(gameState.subLessonFilter);
   updateQuestionFormatRatioSetting(Math.round((gameState.trueFalseRatio || 0.3) * 100));
   updateQuestionCountSetting(gameState.questionLimit || questionBank.filter(matchesMode).length || DEFAULT_QUESTIONS_PER_GAME);
+  applyRolePermissions();
   readBtn.disabled = !speechSupported;
   stopAudioBtn.disabled = !speechSupported;
   renderLeaderboard();
