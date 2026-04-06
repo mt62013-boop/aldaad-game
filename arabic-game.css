@@ -1,9 +1,35 @@
 /* رسائل الخطأ */
 .msg-error {
+.msg-error {
   color: #c00;
   margin-top: 8px;
   font-weight: bold;
   font-size: 1em;
+  text-align: center;
+}
+
+/* زر مشاركة اللعبة */
+#shareGameBtn {
+  background: linear-gradient(90deg, #30cfd0 0%, #330867 100%);
+  color: #fff;
+  font-size: 1.08em;
+  margin: 12px auto 0 auto;
+  display: block;
+  min-width: 200px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+#shareGameBtn:hover {
+  background: linear-gradient(90deg, #330867 0%, #30cfd0 100%);
+}
+#shareMsg {
+  color: #219150;
+  font-weight: bold;
+  margin-top: 8px;
+  font-size: 1em;
+  text-align: center;
+  display: none;
+}
 }
 /* حقل عدد الأسئلة في لوحة التحكم */
 .num-questions-input {

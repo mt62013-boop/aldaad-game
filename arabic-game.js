@@ -1,3 +1,51 @@
+// --- زر مشاركة اللعبة ---
+const shareGameBtn = document.getElementById('shareGameBtn');
+const shareMsg = document.getElementById('shareMsg');
+if (shareGameBtn) {
+  shareGameBtn.onclick = function() {
+    const url = window.location.origin + window.location.pathname;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => {
+        shareMsg.textContent = 'تم نسخ رابط اللعبة! يمكنك الآن إرساله للطلاب.';
+        shareMsg.style.display = '';
+        setTimeout(() => { shareMsg.style.display = 'none'; }, 3000);
+      });
+    } else {
+      shareMsg.textContent = url;
+      shareMsg.style.display = '';
+    }
+  };
+}
+// --- متغيرات أزرار نوع الاختبار ---
+const btnAllDomains = document.getElementById('btnAllDomains');
+const btnDomainOnly = document.getElementById('btnDomainOnly');
+const btnBranchOnly = document.getElementById('btnBranchOnly');
+const adminDomainWrap = document.getElementById('adminDomainWrap');
+const adminBranchWrap = document.getElementById('adminBranchWrap');
+
+let quizType = 'all'; // all | domain | branch
+
+function updateQuizTypeUI() {
+  btnAllDomains.classList.toggle('selected', quizType === 'all');
+  btnDomainOnly.classList.toggle('selected', quizType === 'domain');
+  btnBranchOnly.classList.toggle('selected', quizType === 'branch');
+  adminDomainWrap.style.display = (quizType === 'domain' || quizType === 'branch') ? '' : 'none';
+  adminBranchWrap.style.display = (quizType === 'branch') ? '' : 'none';
+}
+btnAllDomains.onclick = function() {
+  quizType = 'all';
+  updateQuizTypeUI();
+};
+btnDomainOnly.onclick = function() {
+  quizType = 'domain';
+  updateQuizTypeUI();
+};
+btnBranchOnly.onclick = function() {
+  quizType = 'branch';
+  updateQuizTypeUI();
+  updateAdminBranches(); // تحديث الفروع عند اختيار فرع محدد
+};
+updateQuizTypeUI();
 // --- متغيرات واجهات التحكم ---
 const adminLoginSection = document.getElementById('adminLoginSection');
 const adminLoginBtn = document.getElementById('adminLoginBtn');
@@ -47,22 +95,22 @@ adminLogoutBtn.onclick = function() {
 
 // --- تحديث قائمة الفروع في لوحة المعلم ---
 function updateAdminBranches() {
+  // تحديث قائمة الفروع فقط إذا كان نوع الاختبار "فرع محدد"
+  if (quizType !== 'branch') return;
   const domain = adminDomainSelect.value;
+  adminBranchSelect.innerHTML = '';
   if (domain === 'rhetoric' || domain === 'grammar') {
-    adminBranchLabel.style.display = '';
-    adminBranchSelect.innerHTML = '';
     (branches[domain] || []).forEach(f => {
       const opt = document.createElement('option');
       opt.value = f;
       opt.textContent = f;
       adminBranchSelect.appendChild(opt);
     });
-  } else {
-    adminBranchLabel.style.display = 'none';
-    adminBranchSelect.innerHTML = '';
   }
 }
-adminDomainSelect.onchange = updateAdminBranches;
+adminDomainSelect.onchange = function() {
+  if (quizType === 'branch') updateAdminBranches();
+};
 
 // --- بدء اختبار الطالب من لوحة المعلم ---
 adminStartQuizBtn.onclick = function() {
@@ -83,16 +131,26 @@ studentStartBtn.onclick = function() {
   studentNameMsg.textContent = '';
   studentNameSection.classList.add('hidden-section');
   // إعداد الأسئلة حسب اختيار المعلم
-  const domain = adminDomainSelect.value;
-  const branch = (adminBranchLabel.style.display !== 'none') ? adminBranchSelect.value : null;
   let qs = [];
-  if (branch) {
-    qs = questions[branch] ? [...questions[branch]] : [];
-  } else {
+  let domain = null;
+  let branch = null;
+  if (quizType === 'all') {
+    // جميع المجالات
+    Object.keys(questions).forEach(key => {
+      qs = qs.concat(questions[key]);
+    });
+  } else if (quizType === 'domain') {
+    domain = adminDomainSelect.value;
     qs = questions[domain] ? [...questions[domain]] : [];
+  } else if (quizType === 'branch') {
+    domain = adminDomainSelect.value;
+    branch = adminBranchSelect.value;
+    qs = questions[branch] ? [...questions[branch]] : [];
   }
   // عشوائي وعدد الأسئلة
-  const num = Math.min(parseInt(adminNumQuestions.value) || 5, qs.length);
+  const minQuestions = 15;
+  let num = parseInt(adminNumQuestions.value) || minQuestions;
+  if (num < minQuestions) num = minQuestions;
   shuffleArray(qs);
   currentQuiz = {
     student: name,
