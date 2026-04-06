@@ -1,5 +1,5 @@
 const DEFAULT_QUESTIONS_PER_GAME = 12;
-const MAX_QUESTIONS_PER_GAME = 30;
+const MAX_QUESTIONS_PER_GAME = 999;
 const TIME_PER_QUESTION = 25;
 const SCREEN_TRANSITION_MS = 280;
 const SPLASH_DELAY_MS = 1150;
@@ -2670,14 +2670,19 @@ function updateLessonSelection(lessonValue) {
 }
 
 function updateQuestionCountSetting(count) {
-  const normalizedCount = Math.min(MAX_QUESTIONS_PER_GAME, Math.max(1, Number(count) || DEFAULT_QUESTIONS_PER_GAME));
   const availableCount = questionBank.filter(matchesMode).length;
+  const capByBank = availableCount > 0 ? availableCount : MAX_QUESTIONS_PER_GAME;
+  const requestedCount = Number(count);
+  const fallbackCount = availableCount > 0 ? availableCount : DEFAULT_QUESTIONS_PER_GAME;
+  const normalizedCount = Math.min(capByBank, Math.max(1, Number.isFinite(requestedCount) ? requestedCount : fallbackCount));
   const actualCount = availableCount ? Math.min(normalizedCount, availableCount) : 0;
   const selectedLessonLabel = LESSON_LABELS[gameState.lessonFilter] || LESSON_LABELS[DEFAULT_LESSON_FILTER];
 
   gameState.questionLimit = normalizedCount;
 
   if (questionCountInput) {
+    questionCountInput.min = "1";
+    questionCountInput.max = String(capByBank);
     questionCountInput.value = String(normalizedCount);
   }
 
@@ -3778,9 +3783,31 @@ function repositionCorrectAnswer(question, targetIndex = 0) {
   };
 }
 
+function isTrueFalseQuestion(question) {
+  const options = Array.isArray(question?.options) ? question.options : [];
+  if (options.length !== 2) return false;
+
+  const normalized = options.map((option) => String(option || "").trim());
+  return normalized.includes("صح") && normalized.includes("خطأ");
+}
+
 function prepareQuestionsForRound(questions = [], limit = questions.length) {
-  return shuffleArray(questions)
-    .slice(0, Math.max(0, limit))
+  const targetCount = Math.max(0, limit);
+  const shuffledQuestions = shuffleArray(questions);
+  const trueFalsePool = shuffledQuestions.filter(isTrueFalseQuestion);
+  const multipleChoicePool = shuffledQuestions.filter((question) => !isTrueFalseQuestion(question));
+
+  const targetTrueFalse = Math.round(targetCount * 0.3);
+  const pickedTrueFalse = trueFalsePool.slice(0, Math.min(targetTrueFalse, trueFalsePool.length));
+
+  const remainingAfterTrueFalse = targetCount - pickedTrueFalse.length;
+  const pickedMultipleChoice = multipleChoicePool.slice(0, Math.min(remainingAfterTrueFalse, multipleChoicePool.length));
+
+  const missingCount = targetCount - (pickedTrueFalse.length + pickedMultipleChoice.length);
+  const extraTrueFalse = trueFalsePool.slice(pickedTrueFalse.length, pickedTrueFalse.length + Math.max(0, missingCount));
+
+  return shuffleArray([...pickedTrueFalse, ...pickedMultipleChoice, ...extraTrueFalse])
+    .slice(0, targetCount)
     .map((question, index) => repositionCorrectAnswer(question, index % Math.max(question.options?.length || 4, 1)));
 }
 
@@ -3842,7 +3869,7 @@ updateCompetitionMode(gameState.competitionMode);
 updateTeamCount(gameState.teamCount);
 populateStudentNames(DEFAULT_STUDENT_COUNT);
 updateLessonSelection(gameState.lessonFilter);
-updateQuestionCountSetting(DEFAULT_QUESTIONS_PER_GAME);
+updateQuestionCountSetting(questionBank.filter(matchesMode).length || DEFAULT_QUESTIONS_PER_GAME);
 readBtn.disabled = !speechSupported;
 stopAudioBtn.disabled = !speechSupported;
 renderLeaderboard();
