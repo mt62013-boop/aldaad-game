@@ -84,13 +84,21 @@ const recoverAccountBtn = document.getElementById("recover-account-btn");
 const recoveryStatus = document.getElementById("recovery-status");
 const authStatus = document.getElementById("auth-status");
 const togglePasswordPanelBtn = document.getElementById("toggle-password-panel-btn");
+const toggleRecoveryUpdatePanelBtn = document.getElementById("toggle-recovery-update-panel-btn");
 const teacherLogoutBtn = document.getElementById("teacher-logout-btn");
 const passwordPanel = document.getElementById("password-panel");
+const recoveryUpdatePanel = document.getElementById("recovery-update-panel");
+const updateRecoveryMethodSelect = document.getElementById("update-recovery-method");
+const updateRecoveryCountryWrap = document.getElementById("update-recovery-country-wrap");
+const updateRecoveryCountrySelect = document.getElementById("update-recovery-country");
+const updateRecoveryValueInput = document.getElementById("update-recovery-value");
 const currentPasswordInput = document.getElementById("current-password");
 const newPasswordInput = document.getElementById("new-password");
 const confirmPasswordInput = document.getElementById("confirm-password");
 const savePasswordBtn = document.getElementById("save-password-btn");
 const passwordChangeStatus = document.getElementById("password-change-status");
+const saveRecoveryUpdateBtn = document.getElementById("save-recovery-update-btn");
+const recoveryUpdateStatus = document.getElementById("recovery-update-status");
 const calmModeToggle = document.getElementById("calm-mode-toggle");
 const calmModeNote = document.getElementById("calm-mode-note");
 const schoolNameInput = document.getElementById("school-name");
@@ -109,7 +117,6 @@ const teamSetupSection = document.getElementById("team-setup-section");
 const studentSetupSection = document.getElementById("student-setup-section");
 const studentCountSelect = document.getElementById("student-count");
 const studentNamesInput = document.getElementById("student-names");
-const fillStudentsBtn = document.getElementById("fill-students-btn");
 const lessonSelect = document.getElementById("lesson-filter");
 const subLessonGroup = document.getElementById("sub-lesson-group");
 const subLessonSelect = document.getElementById("sub-lesson-filter");
@@ -559,10 +566,6 @@ studentCountSelect?.addEventListener("change", () => {
   populateStudentNames(Number(studentCountSelect.value));
 });
 
-fillStudentsBtn?.addEventListener("click", () => {
-  populateStudentNames(Number(studentCountSelect?.value || DEFAULT_STUDENT_COUNT), true);
-});
-
 lessonSelect?.addEventListener("change", () => {
   updateLessonSelection(lessonSelect.value);
 });
@@ -588,10 +591,13 @@ authForgotBtn?.addEventListener("click", toggleAuthRecoveryPanel);
 recoverAccountBtn?.addEventListener("click", recoverTeacherAccount);
 authRecoveryMethodSelect?.addEventListener("change", () => updateRecoveryInputState(authRecoveryMethodSelect, authRecoveryCountryWrap, authRecoveryCountrySelect, authRecoveryValueInput));
 recoveryMethodSelect?.addEventListener("change", () => updateRecoveryInputState(recoveryMethodSelect, recoveryCountryWrap, recoveryCountrySelect, recoveryValueInput));
+updateRecoveryMethodSelect?.addEventListener("change", () => updateRecoveryInputState(updateRecoveryMethodSelect, updateRecoveryCountryWrap, updateRecoveryCountrySelect, updateRecoveryValueInput));
 authLogoUploadInput?.addEventListener("change", handleTeacherLogoUpload);
 togglePasswordPanelBtn?.addEventListener("click", togglePasswordPanel);
+toggleRecoveryUpdatePanelBtn?.addEventListener("click", toggleRecoveryUpdatePanel);
 teacherLogoutBtn?.addEventListener("click", logoutTeacher);
 savePasswordBtn?.addEventListener("click", changeTeacherPassword);
+saveRecoveryUpdateBtn?.addEventListener("click", updateTeacherRecoveryDetails);
 calmModeToggle?.addEventListener("change", () => applyCalmMode(calmModeToggle.checked));
 schoolNameInput.addEventListener("input", updateBranding);
 teacherNameInput.addEventListener("input", updateBranding);
@@ -1482,6 +1488,51 @@ function setRecoveryStatus(message, type = "") {
   }
 }
 
+function formatRecoveryPreview(method, countryCode, value) {
+  if (!value) {
+    return "لا توجد بيانات استرجاع محفوظة بعد.";
+  }
+
+  if (method === "phone") {
+    const countryName = ARAB_COUNTRIES.find((country) => country.code === countryCode)?.name || "الدولة المحددة";
+    const endingDigits = String(value).slice(-4);
+    return `وسيلة الاسترجاع الحالية: ${countryName} (${countryCode}) ••••${endingDigits}`;
+  }
+
+  const [namePart = "", domainPart = ""] = String(value).split("@");
+  const visibleName = namePart.slice(0, 2) || "••";
+  return `وسيلة الاسترجاع الحالية: ${visibleName}•••@${domainPart}`;
+}
+
+function setRecoveryUpdateStatus(message, type = "") {
+  if (!recoveryUpdateStatus) return;
+
+  recoveryUpdateStatus.textContent = message;
+  recoveryUpdateStatus.classList.remove("error", "success");
+  if (type) {
+    recoveryUpdateStatus.classList.add(type);
+  }
+}
+
+function syncTeacherRecoveryEditor(account = getStoredTeacherAccount()) {
+  const recoveryMethod = account?.recoveryMethod || "phone";
+  const recoveryCountry = account?.recoveryCountry || "+965";
+  const recoveryValue = account?.recoveryValue || "";
+
+  if (updateRecoveryMethodSelect) {
+    updateRecoveryMethodSelect.value = recoveryMethod;
+  }
+  if (updateRecoveryCountrySelect) {
+    updateRecoveryCountrySelect.value = recoveryCountry;
+  }
+  if (updateRecoveryValueInput) {
+    updateRecoveryValueInput.value = recoveryValue;
+  }
+
+  updateRecoveryInputState(updateRecoveryMethodSelect, updateRecoveryCountryWrap, updateRecoveryCountrySelect, updateRecoveryValueInput);
+  setRecoveryUpdateStatus(formatRecoveryPreview(recoveryMethod, recoveryCountry, recoveryValue));
+}
+
 function toggleAuthRecoveryPanel() {
   if (!authRecoveryPanel) return;
 
@@ -1492,6 +1543,14 @@ function toggleAuthRecoveryPanel() {
     authForgotBtn.textContent = shouldShow ? "إغلاق الاسترجاع" : "نسيت اسم المستخدم أو كلمة المرور";
   }
 
+  const storedAccount = getStoredTeacherAccount();
+  if (storedAccount && recoveryMethodSelect) {
+    recoveryMethodSelect.value = storedAccount.recoveryMethod || "phone";
+  }
+  if (storedAccount && recoveryCountrySelect) {
+    recoveryCountrySelect.value = storedAccount.recoveryCountry || "+965";
+  }
+  updateRecoveryInputState(recoveryMethodSelect, recoveryCountryWrap, recoveryCountrySelect, recoveryValueInput);
   setRecoveryStatus("عند تطابق بيانات الاسترجاع يظهر اسم المستخدم، ويمكنك أيضًا تعيين كلمة مرور جديدة.");
 }
 
@@ -1579,6 +1638,7 @@ function syncTeacherAuthView() {
     recoveryCountrySelect.value = storedAccount.recoveryCountry;
   }
   updateRecoveryInputState(recoveryMethodSelect, recoveryCountryWrap, recoveryCountrySelect, recoveryValueInput);
+  syncTeacherRecoveryEditor(storedAccount);
 
   setAuthStatus("صلاحيات لوحة المعلم محمية بكلمة مرور المعلم فقط، ويمكنك الاسترجاع عبر وسيلة التواصل المحفوظة.");
 }
@@ -1777,6 +1837,7 @@ function recoverTeacherAccount() {
 
   recoveryNewPasswordInput && (recoveryNewPasswordInput.value = "");
   recoveryConfirmPasswordInput && (recoveryConfirmPasswordInput.value = "");
+  syncTeacherRecoveryEditor(storedAccount);
 
   setRecoveryStatus(`تم التحقق بنجاح. اسم المستخدم هو: ${storedAccount.username}.${passwordMessage}`, "success");
 }
@@ -1806,6 +1867,68 @@ function togglePasswordPanel() {
     newPasswordInput && (newPasswordInput.value = "");
     confirmPasswordInput && (confirmPasswordInput.value = "");
   }
+}
+
+function toggleRecoveryUpdatePanel() {
+  if (!recoveryUpdatePanel) return;
+
+  const willShow = recoveryUpdatePanel.classList.contains("hidden");
+  recoveryUpdatePanel.classList.toggle("hidden", !willShow);
+
+  if (toggleRecoveryUpdatePanelBtn) {
+    toggleRecoveryUpdatePanelBtn.textContent = willShow ? "إغلاق تحديث بيانات الاسترجاع" : "تحديث بيانات الاسترجاع";
+  }
+
+  if (willShow) {
+    syncTeacherRecoveryEditor();
+    return;
+  }
+
+  updateRecoveryValueInput && (updateRecoveryValueInput.value = "");
+}
+
+function updateTeacherRecoveryDetails() {
+  const storedAccount = getStoredTeacherAccount();
+  if (!storedAccount) {
+    setRecoveryUpdateStatus("لا يوجد حساب معلم محفوظ حاليًا.", "error");
+    return;
+  }
+
+  const recoveryMethod = updateRecoveryMethodSelect?.value || "phone";
+  const recoveryCountry = recoveryMethod === "phone" ? (updateRecoveryCountrySelect?.value || "+965") : "";
+  const recoveryValue = normalizeRecoveryValue(recoveryMethod, updateRecoveryValueInput?.value || "");
+
+  if (!recoveryValue) {
+    setRecoveryUpdateStatus("أدخل رقم الهاتف أو البريد الإلكتروني الجديد للاسترجاع.", "error");
+    updateRecoveryValueInput?.focus();
+    return;
+  }
+
+  if (recoveryMethod === "email" && !recoveryValue.includes("@")) {
+    setRecoveryUpdateStatus("يرجى إدخال بريد إلكتروني صحيح.", "error");
+    updateRecoveryValueInput?.focus();
+    return;
+  }
+
+  if (recoveryMethod === "phone" && recoveryValue.length < 6) {
+    setRecoveryUpdateStatus("يرجى إدخال رقم هاتف صحيح مع الدولة العربية المناسبة.", "error");
+    updateRecoveryValueInput?.focus();
+    return;
+  }
+
+  const updatedAccount = { ...storedAccount, recoveryMethod, recoveryCountry, recoveryValue };
+  localStorage.setItem(TEACHER_AUTH_STORAGE_KEY, JSON.stringify(updatedAccount));
+
+  if (recoveryMethodSelect) {
+    recoveryMethodSelect.value = recoveryMethod;
+  }
+  if (recoveryCountrySelect) {
+    recoveryCountrySelect.value = recoveryCountry || "+965";
+  }
+  updateRecoveryInputState(recoveryMethodSelect, recoveryCountryWrap, recoveryCountrySelect, recoveryValueInput);
+  syncTeacherRecoveryEditor(updatedAccount);
+  setRecoveryUpdateStatus("تم تحديث بيانات الاسترجاع بنجاح من داخل لوحة المعلم.", "success");
+  assistantText.textContent = "المساعد الذكي: تم حفظ بيانات الاسترجاع الجديدة للمعلم بنجاح.";
 }
 
 function changeTeacherPassword() {
@@ -1848,9 +1971,13 @@ function changeTeacherPassword() {
 function logoutTeacher() {
   setTeacherAuthenticated(false);
   passwordPanel?.classList.add("hidden");
+  recoveryUpdatePanel?.classList.add("hidden");
   authRecoveryPanel?.classList.add("hidden");
   if (togglePasswordPanelBtn) {
     togglePasswordPanelBtn.textContent = "تغيير كلمة المرور";
+  }
+  if (toggleRecoveryUpdatePanelBtn) {
+    toggleRecoveryUpdatePanelBtn.textContent = "تحديث بيانات الاسترجاع";
   }
   if (authForgotBtn) {
     authForgotBtn.textContent = "نسيت اسم المستخدم أو كلمة المرور";
@@ -1859,6 +1986,7 @@ function logoutTeacher() {
   newPasswordInput && (newPasswordInput.value = "");
   confirmPasswordInput && (confirmPasswordInput.value = "");
   authLoginPasswordInput && (authLoginPasswordInput.value = "");
+  updateRecoveryValueInput && (updateRecoveryValueInput.value = "");
   syncTeacherAuthView();
   showScreen("auth");
   assistantText.textContent = "المساعد الذكي: تم تسجيل خروج المعلم بنجاح.";
@@ -2951,8 +3079,10 @@ async function initializeApp() {
   loadSavedBranding();
   populateArabCountrySelect(authRecoveryCountrySelect);
   populateArabCountrySelect(recoveryCountrySelect);
+  populateArabCountrySelect(updateRecoveryCountrySelect);
   updateRecoveryInputState(authRecoveryMethodSelect, authRecoveryCountryWrap, authRecoveryCountrySelect, authRecoveryValueInput);
   updateRecoveryInputState(recoveryMethodSelect, recoveryCountryWrap, recoveryCountrySelect, recoveryValueInput);
+  updateRecoveryInputState(updateRecoveryMethodSelect, updateRecoveryCountryWrap, updateRecoveryCountrySelect, updateRecoveryValueInput);
   await loadSavedQuestions();
   loadSavedRoundSettings();
   applySessionConfigFromUrl();

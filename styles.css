@@ -704,13 +704,6 @@ main > section.panel.screen-exit.screen-exit-active {
   accent-color: var(--primary-dark);
 }
 
-.teacher-security-box {
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(108, 140, 255, 0.16);
-}
-
 .teacher-security-actions {
   display: flex;
   gap: 10px;
@@ -1676,24 +1669,6 @@ select option {
   }
 }
 
-@keyframes cinematicLogoReveal {
-  0% {
-    opacity: 0;
-    transform: scale(0.72) translateY(-10px);
-    filter: blur(8px) drop-shadow(0 0 0 rgba(22, 50, 79, 0));
-  }
-  55% {
-    opacity: 1;
-    transform: scale(1.06) translateY(0);
-    filter: blur(0) drop-shadow(0 12px 24px rgba(74, 163, 162, 0.22));
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-    filter: blur(0) drop-shadow(0 10px 20px rgba(22, 50, 79, 0.18));
-  }
-}
-
 @keyframes welcomeTextRise {
   from {
     opacity: 0;
@@ -1830,7 +1805,7 @@ body.calm-mode *::after {
 
 @media (max-width: 820px) {
   body {
-    background-attachment: fixed;
+    background-attachment: scroll;
   }
 
   .page-corner {
@@ -1900,7 +1875,6 @@ body.calm-mode *::after {
     backdrop-filter: blur(14px);
   }
 
-  .welcome-meta,
   .branding-fields,
   .team-inputs-grid,
   .question-options-grid,

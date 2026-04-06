@@ -361,6 +361,7 @@
               <label>إدارة حساب المعلم</label>
               <div class="director-actions teacher-security-actions">
                 <button id="toggle-password-panel-btn" class="secondary-btn" type="button">تغيير كلمة المرور</button>
+                <button id="toggle-recovery-update-panel-btn" class="secondary-btn" type="button">تحديث بيانات الاسترجاع</button>
                 <button id="teacher-logout-btn" class="ghost-btn" type="button">خروج المعلم</button>
               </div>
               <div id="password-panel" class="password-panel hidden">
@@ -382,6 +383,29 @@
                   <button id="save-password-btn" class="primary-btn" type="button">حفظ كلمة المرور الجديدة</button>
                 </div>
                 <p id="password-change-status" class="branding-note password-change-status">يمكنك تغيير كلمة مرور المعلم في أي وقت بعد إدخال الحالية.</p>
+              </div>
+              <div id="recovery-update-panel" class="password-panel hidden">
+                <div class="auth-grid">
+                  <div class="field-group">
+                    <label for="update-recovery-method">وسيلة الاسترجاع الجديدة</label>
+                    <select id="update-recovery-method">
+                      <option value="phone" selected>رقم هاتف</option>
+                      <option value="email">بريد إلكتروني</option>
+                    </select>
+                  </div>
+                  <div id="update-recovery-country-wrap" class="field-group">
+                    <label for="update-recovery-country">الدولة العربية</label>
+                    <select id="update-recovery-country"></select>
+                  </div>
+                  <div class="field-group">
+                    <label for="update-recovery-value">رقم الهاتف أو الإيميل الجديد</label>
+                    <input id="update-recovery-value" type="tel" inputmode="numeric" placeholder="أدخل وسيلة الاسترجاع الجديدة" maxlength="80" />
+                  </div>
+                </div>
+                <div class="director-actions teacher-security-actions">
+                  <button id="save-recovery-update-btn" class="primary-btn" type="button">حفظ بيانات الاسترجاع</button>
+                </div>
+                <p id="recovery-update-status" class="branding-note password-change-status">يمكنك تحديث هاتف أو بريد الاسترجاع في أي وقت من داخل لوحة المعلم.</p>
               </div>
             </div>
 
