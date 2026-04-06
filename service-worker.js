@@ -1,11 +1,12 @@
-const STATIC_CACHE = "aldaad-static-v2";
-const DYNAMIC_CACHE = "aldaad-dynamic-v2";
+const STATIC_CACHE = "aldaad-static-v3";
+const DYNAMIC_CACHE = "aldaad-dynamic-v3";
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./offline.html",
   "./styles.css",
   "./script.js",
+  "./questions-data.json",
   "./manifest.webmanifest",
   "./logo-logo.png",
   "./school-logo.png",
