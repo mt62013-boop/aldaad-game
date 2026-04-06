@@ -621,7 +621,10 @@ document.addEventListener("keydown", (event) => {
     closeEndGameModal();
   }
 });
-restartBtn.addEventListener("click", () => showScreen("start"));
+restartBtn.addEventListener("click", () => {
+  hideTeacherStartSettings();
+  showScreen("start");
+});
 announceWinnerBtn.addEventListener("click", playWinnerAnnouncement);
 introMusicBtn?.addEventListener("click", playIntroMusic);
 resetBrandingBtn.addEventListener("click", resetBrandingToDefaults);
@@ -1317,6 +1320,7 @@ function startGame() {
     const emptyTeam = teamNameInputs.slice(0, 2).find((input) => !input.value.trim());
     if (emptyTeam) {
       setQuestionEditorStatus("اكتب اسم الفريق الأول والثاني قبل بدء اللعبة.", "error");
+      revealTeacherStartSettings();
       const advancedSettingsPanel = document.querySelector(".advanced-settings-panel");
       if (advancedSettingsPanel) {
         advancedSettingsPanel.open = true;
@@ -1332,6 +1336,7 @@ function startGame() {
 
     if (!enteredStudentNames.length) {
       setQuestionEditorStatus("اكتب اسم الطالب أو الطلاب المشاركين قبل بدء اللعبة.", "error");
+      revealTeacherStartSettings();
       const advancedSettingsPanel = document.querySelector(".advanced-settings-panel");
       if (advancedSettingsPanel) {
         advancedSettingsPanel.open = true;
@@ -1349,6 +1354,7 @@ function startGame() {
   if (!filtered.length) {
     const selectedLessonLabel = LESSON_LABELS[gameState.lessonFilter] || LESSON_LABELS[DEFAULT_LESSON_FILTER];
     setQuestionEditorStatus(`لا توجد أسئلة مناسبة ضمن ${selectedLessonLabel} والمجال الحالي. عدّل الأسئلة أو اختر درسًا/مجالًا آخر.`, "error");
+    revealTeacherStartSettings();
     const advancedSettingsPanel = document.querySelector(".advanced-settings-panel");
     if (advancedSettingsPanel) {
       advancedSettingsPanel.open = true;
@@ -1491,6 +1497,16 @@ function applyCalmMode(enabled = false) {
   }
 
   saveRoundSettings();
+}
+
+function hideTeacherStartSettings() {
+  if (IS_CONTESTANT_VIEW) return;
+  document.body.classList.remove("show-start-settings");
+}
+
+function revealTeacherStartSettings() {
+  if (IS_CONTESTANT_VIEW) return;
+  document.body.classList.add("show-start-settings");
 }
 
 function setRecoveryStatus(message, type = "") {
@@ -3102,6 +3118,7 @@ async function initializeApp() {
   loadSavedRoundSettings();
   applySessionConfigFromUrl();
   applyCalmMode(gameState.calmMode);
+  hideTeacherStartSettings();
   updateBranding();
   syncTeacherAuthView();
   updateModeSelection(gameState.mode);

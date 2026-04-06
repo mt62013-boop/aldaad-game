@@ -533,6 +533,16 @@ main > section.panel.screen-exit.screen-exit-active {
   margin-bottom: 10px;
 }
 
+body:not(.contestant-view):not(.show-start-settings) #start-screen .start-core > :not(h2):not(.start-screen-note):not(.quick-start-actions) {
+  display: none !important;
+}
+
+body:not(.contestant-view):not(.show-start-settings) #start-screen .start-core {
+  max-width: 420px;
+  margin: 0 auto;
+  text-align: center;
+}
+
 body.contestant-view #start-screen .start-optional {
   display: none !important;
 }
