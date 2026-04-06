@@ -1,3 +1,30 @@
+/* رسائل الخطأ */
+.msg-error {
+  color: #c00;
+  margin-top: 8px;
+  font-weight: bold;
+  font-size: 1em;
+}
+/* حقل عدد الأسئلة في لوحة التحكم */
+.num-questions-input {
+  width: 70px;
+  font-weight: bold;
+  font-size: 1.1em;
+  padding: 3px 6px;
+  border-radius: 6px;
+  border: 1px solid #d1c4e9;
+  text-align: center;
+}
+.admin-start-btn {
+  font-size: 1.1em;
+  margin-top: 10px;
+}
+.quiz-progress {
+  margin: 10px 0;
+  color: #444;
+  font-weight: bold;
+  font-size: 1.1em;
+}
 /* إخفاء الأقسام عند الحاجة */
 .hidden-section {
   display: none;
