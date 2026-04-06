@@ -44,9 +44,11 @@ async function ensureDefaultQuestionBankLoaded() {
 }
 
 let questionBank = [];
+let pendingTeacherLogoData = "";
 
 const screens = {
   splash: document.getElementById("splash-screen"),
+  auth: document.getElementById("auth-screen"),
   intro: document.getElementById("intro-screen"),
   start: document.getElementById("start-screen"),
   game: document.getElementById("game-screen"),
@@ -54,6 +56,20 @@ const screens = {
 };
 
 const playerNameInput = document.getElementById("player-name");
+const authTitle = document.getElementById("auth-title");
+const authDescription = document.getElementById("auth-description");
+const authRegisterPanel = document.getElementById("auth-register-panel");
+const authLoginPanel = document.getElementById("auth-login-panel");
+const authSchoolNameInput = document.getElementById("auth-school-name");
+const authTeacherNameInput = document.getElementById("auth-teacher-name");
+const authLogoUploadInput = document.getElementById("auth-logo-upload");
+const authRegisterUsernameInput = document.getElementById("auth-register-username");
+const authRegisterPasswordInput = document.getElementById("auth-register-password");
+const authLoginUsernameInput = document.getElementById("auth-login-username");
+const authLoginPasswordInput = document.getElementById("auth-login-password");
+const authRegisterBtn = document.getElementById("auth-register-btn");
+const authLoginBtn = document.getElementById("auth-login-btn");
+const authStatus = document.getElementById("auth-status");
 const introContinueBtn = document.getElementById("intro-continue-btn");
 const introWelcomeBtn = document.getElementById("intro-welcome-btn");
 const introSchoolDisplay = document.getElementById("intro-school-display");
@@ -114,6 +130,8 @@ const timerLabel = document.getElementById("timer-label");
 const categoryTag = document.getElementById("category-tag");
 const progressBar = document.getElementById("progress-bar");
 const questionText = document.getElementById("question-text");
+const questionPointsLive = document.getElementById("question-points-live");
+const questionPointsLabel = document.getElementById("question-points-label");
 const answersContainer = document.getElementById("answers-container");
 const feedbackBox = document.getElementById("feedback-box");
 const assistBtn = document.getElementById("assist-btn");
@@ -218,6 +236,8 @@ const GAME_LOGO_SRC = "logo-logo.png?v=2";
 const BRANDING_STORAGE_KEY = "arabic-game-branding";
 const QUESTIONS_STORAGE_KEY = "arabic-game-custom-questions";
 const ROUND_SETTINGS_STORAGE_KEY = "arabic-game-round-settings";
+const TEACHER_AUTH_STORAGE_KEY = "arabic-game-teacher-auth";
+const TEACHER_SESSION_STORAGE_KEY = "arabic-game-teacher-session";
 const speechSupported = "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined";
 const audioContext = typeof window !== "undefined" && (window.AudioContext || window.webkitAudioContext)
   ? new (window.AudioContext || window.webkitAudioContext)()
@@ -509,6 +529,9 @@ questionFormatRatioSelect?.addEventListener("change", () => {
 });
 
 playerNameInput?.addEventListener("input", syncContestantStartAvailability);
+authRegisterBtn?.addEventListener("click", registerTeacherAccount);
+authLoginBtn?.addEventListener("click", loginTeacherAccount);
+authLogoUploadInput?.addEventListener("change", handleTeacherLogoUpload);
 schoolNameInput.addEventListener("input", updateBranding);
 teacherNameInput.addEventListener("input", updateBranding);
 logoUploadInput.addEventListener("change", handleLogoUpload);
@@ -670,8 +693,12 @@ function beginOpeningSequence() {
   showScreen("splash");
   window.clearTimeout(gameState.openingSequenceId);
   gameState.openingSequenceId = window.setTimeout(() => {
-    showScreen("start");
-    scheduleAutoIntroMusic();
+    const nextScreenName = getInitialScreenName();
+    showScreen(nextScreenName);
+
+    if (nextScreenName === "start") {
+      scheduleAutoIntroMusic();
+    }
   }, SPLASH_DELAY_MS);
 }
 
@@ -693,6 +720,15 @@ function loadSavedBranding() {
   teacherNameInput.value = savedBranding.teacherName || DEFAULT_TEACHER_NAME;
   schoolLogoImage.src = logoSrc;
   introLogoImage.src = GAME_LOGO_SRC;
+  pendingTeacherLogoData = savedBranding.customLogo || "";
+
+  if (authSchoolNameInput) {
+    authSchoolNameInput.value = schoolNameInput.value;
+  }
+
+  if (authTeacherNameInput) {
+    authTeacherNameInput.value = teacherNameInput.value;
+  }
 }
 
 function updateBranding() {
@@ -1328,6 +1364,197 @@ function syncContestantStartAvailability() {
   startBtn.setAttribute("aria-disabled", hasName ? "false" : "true");
 }
 
+function updateQuestionPointsDisplay(prefix = "النقاط المتبقية لهذا السؤال", points = getQuestionPointsByTime()) {
+  if (!questionPointsLive) return;
+
+  const livePrefix = prefix.endsWith(":") ? prefix : `${prefix}:`;
+  if (questionPointsLive.firstChild) {
+    questionPointsLive.firstChild.textContent = `${livePrefix} `;
+  }
+
+  const valueLabel = questionPointsLive.querySelector("strong") || questionPointsLabel;
+  if (valueLabel) {
+    valueLabel.textContent = String(Math.max(0, points));
+  }
+}
+
+function getStoredTeacherAccount() {
+  try {
+    const storedAccount = JSON.parse(localStorage.getItem(TEACHER_AUTH_STORAGE_KEY) || "null");
+    if (!storedAccount || typeof storedAccount.username !== "string" || typeof storedAccount.password !== "string") {
+      return null;
+    }
+
+    return storedAccount;
+  } catch (error) {
+    console.warn("Unable to read teacher account:", error);
+    return null;
+  }
+}
+
+function isTeacherAuthenticated() {
+  return IS_CONTESTANT_VIEW || sessionStorage.getItem(TEACHER_SESSION_STORAGE_KEY) === "true";
+}
+
+function setTeacherAuthenticated(isAuthenticated) {
+  if (IS_CONTESTANT_VIEW) return;
+
+  if (isAuthenticated) {
+    sessionStorage.setItem(TEACHER_SESSION_STORAGE_KEY, "true");
+    return;
+  }
+
+  sessionStorage.removeItem(TEACHER_SESSION_STORAGE_KEY);
+}
+
+function setAuthStatus(message, type = "") {
+  if (!authStatus) return;
+
+  authStatus.textContent = message;
+  authStatus.classList.remove("error", "success");
+  if (type) {
+    authStatus.classList.add(type);
+  }
+}
+
+function syncTeacherAuthView() {
+  if (IS_CONTESTANT_VIEW) return;
+
+  const storedAccount = getStoredTeacherAccount();
+  const hasTeacherAccount = !!storedAccount;
+
+  authRegisterPanel?.classList.toggle("hidden", hasTeacherAccount);
+  authLoginPanel?.classList.toggle("hidden", !hasTeacherAccount);
+
+  if (authTitle) {
+    authTitle.textContent = hasTeacherAccount ? "دخول المعلم" : "تسجيل المعلم لأول مرة";
+  }
+
+  if (authDescription) {
+    authDescription.textContent = hasTeacherAccount
+      ? "أدخل اسم المستخدم وكلمة المرور الخاصين بالمعلم للوصول إلى لوحة إدارة الجلسة."
+      : "أدخل بيانات المدرسة والمعلم مرة واحدة، ثم اختر اسم مستخدم وكلمة مرور خاصين بالمعلم لإدارة الجلسة.";
+  }
+
+  if (!hasTeacherAccount) {
+    if (authSchoolNameInput) {
+      authSchoolNameInput.value = schoolNameInput.value.trim() || DEFAULT_SCHOOL_NAME;
+    }
+    if (authTeacherNameInput) {
+      authTeacherNameInput.value = teacherNameInput.value.trim() || DEFAULT_TEACHER_NAME;
+    }
+    setAuthStatus("اسم المدرسة إلزامي، والشعار اختياري، وكلمة المرور مخصصة للمعلم فقط.");
+    return;
+  }
+
+  if (authLoginUsernameInput && !authLoginUsernameInput.value.trim()) {
+    authLoginUsernameInput.value = storedAccount.username;
+  }
+
+  setAuthStatus("صلاحيات لوحة المعلم محمية بكلمة مرور المعلم فقط.");
+}
+
+function getInitialScreenName() {
+  if (IS_CONTESTANT_VIEW || isTeacherAuthenticated()) {
+    return "start";
+  }
+
+  syncTeacherAuthView();
+  return "auth";
+}
+
+function registerTeacherAccount() {
+  const schoolName = authSchoolNameInput?.value.trim() || "";
+  const teacherName = authTeacherNameInput?.value.trim() || "";
+  const username = authRegisterUsernameInput?.value.trim() || "";
+  const password = authRegisterPasswordInput?.value.trim() || "";
+
+  if (!schoolName) {
+    setAuthStatus("يرجى إدخال اسم المدرسة أولًا.", "error");
+    authSchoolNameInput?.focus();
+    return;
+  }
+
+  if (!teacherName) {
+    setAuthStatus("يرجى إدخال اسم المعلم أولًا.", "error");
+    authTeacherNameInput?.focus();
+    return;
+  }
+
+  if (username.length < 3) {
+    setAuthStatus("اختر اسم مستخدم للمعلم لا يقل عن 3 أحرف.", "error");
+    authRegisterUsernameInput?.focus();
+    return;
+  }
+
+  if (password.length < 4) {
+    setAuthStatus("اختر كلمة مرور للمعلم لا تقل عن 4 أحرف.", "error");
+    authRegisterPasswordInput?.focus();
+    return;
+  }
+
+  localStorage.setItem(TEACHER_AUTH_STORAGE_KEY, JSON.stringify({ username, password }));
+  schoolNameInput.value = schoolName;
+  teacherNameInput.value = teacherName;
+
+  if (pendingTeacherLogoData) {
+    schoolLogoImage.src = pendingTeacherLogoData;
+  }
+
+  updateBranding();
+  setTeacherAuthenticated(true);
+  syncTeacherAuthView();
+
+  if (authLoginUsernameInput) {
+    authLoginUsernameInput.value = username;
+  }
+  if (authLoginPasswordInput) {
+    authLoginPasswordInput.value = "";
+  }
+
+  setAuthStatus("تم إنشاء حساب المعلم بنجاح، ويمكنك الآن إدارة الجلسة.", "success");
+  showScreen("start");
+  scheduleAutoIntroMusic();
+}
+
+function loginTeacherAccount() {
+  const storedAccount = getStoredTeacherAccount();
+  const username = authLoginUsernameInput?.value.trim() || "";
+  const password = authLoginPasswordInput?.value.trim() || "";
+
+  if (!storedAccount) {
+    syncTeacherAuthView();
+    showScreen("auth");
+    return;
+  }
+
+  if (username !== storedAccount.username || password !== storedAccount.password) {
+    setAuthStatus("اسم المستخدم أو كلمة المرور غير صحيحين. حاول مرة أخرى.", "error");
+    authLoginPasswordInput?.focus();
+    return;
+  }
+
+  setTeacherAuthenticated(true);
+  setAuthStatus("تم تسجيل دخول المعلم بنجاح.", "success");
+  showScreen("start");
+  scheduleAutoIntroMusic();
+}
+
+function handleTeacherLogoUpload(event) {
+  const [file] = event.target.files || [];
+  if (!file) {
+    pendingTeacherLogoData = "";
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    pendingTeacherLogoData = String(reader.result || "");
+    setAuthStatus("تم اختيار الشعار وسيُحفظ عند إنشاء حساب المعلم.", "success");
+  };
+  reader.readAsDataURL(file);
+}
+
 function setAnswerButtonsEnabled(enabled) {
   Array.from(document.querySelectorAll(".answer-btn")).forEach((button) => {
     button.disabled = gameState.answered ? true : !(enabled && gameState.buzzLocked);
@@ -1525,6 +1752,7 @@ function renderQuestion() {
   gameState.currentTeamIndex = -1;
   gameState.timer = TIME_PER_QUESTION;
   timerLabel.textContent = String(TIME_PER_QUESTION);
+  updateQuestionPointsDisplay();
   nextBtn.classList.add("hidden");
   feedbackBox.className = "feedback hidden";
   feedbackBox.innerHTML = "";
@@ -1601,6 +1829,7 @@ function renderQuestion() {
   gameState.timerId = setInterval(() => {
     gameState.timer -= 1;
     timerLabel.textContent = String(gameState.timer);
+    updateQuestionPointsDisplay();
     if (gameState.timer <= 0) {
       clearInterval(gameState.timerId);
       lockAnswer(-1);
@@ -2083,6 +2312,7 @@ function lockAnswer(selectedIndex) {
   const expandedExplanation = buildExpandedExplanation(question);
   let message = "";
   if (selectedIndex === -1) {
+    updateQuestionPointsDisplay("النقاط المتبقية لهذا السؤال", 0);
     feedbackBox.className = "feedback warning";
     message = `${responderName}: انتهى الوقت، ولم تُحتسب أي نقاط لهذا السؤال. الإجابة الصحيحة هي <strong>${question.options[question.correctIndex]}</strong><br><strong>الشرح:</strong> ${question.explanation}<br><strong>توسيع الفكرة:</strong> ${expandedExplanation}`;
     playFailSound();
@@ -2094,6 +2324,7 @@ function lockAnswer(selectedIndex) {
     gameState.correctAnswers += 1;
     gameState.categoryStats[question.category].correct += 1;
     scoreLabel.textContent = String(currentTeam.score);
+    updateQuestionPointsDisplay("النقاط المحتسبة لهذا السؤال", earnedPoints);
     feedbackBox.className = "feedback success";
     message = `${currentTeam.name}: إجابة صحيحة ✅ حصل على <strong>${earnedPoints}</strong> نقطة من أصل <strong>${MAX_POINTS_PER_QUESTION}</strong>، مع خصم نقطة واحدة عن كل ثانية تأخير.<br><strong>الشرح:</strong> ${question.explanation}<br><strong>توسيع الفكرة:</strong> ${expandedExplanation}`;
     playSuccessSound();
@@ -2102,6 +2333,7 @@ function lockAnswer(selectedIndex) {
     currentTeam.score -= penaltyPoints;
     gameState.score = gameState.teams.reduce((sum, participant) => sum + participant.score, 0);
     scoreLabel.textContent = String(currentTeam.score);
+    updateQuestionPointsDisplay("النقاط المخصومة لهذا السؤال", penaltyPoints);
     feedbackBox.className = "feedback error";
     message = `${currentTeam.name}: الإجابة غير صحيحة ❌ خُصمت <strong>${penaltyPoints}</strong> نقطة كاملة لهذا السؤال، والصحيح هو <strong>${question.options[question.correctIndex]}</strong><br><strong>الشرح:</strong> ${question.explanation}<br><strong>توسيع الفكرة:</strong> ${expandedExplanation}`;
     playFailSound();
@@ -2412,6 +2644,7 @@ async function initializeApp() {
   loadSavedRoundSettings();
   applySessionConfigFromUrl();
   updateBranding();
+  syncTeacherAuthView();
   updateModeSelection(gameState.mode);
   updateCompetitionMode(gameState.competitionMode);
   updateTeamCount(gameState.teamCount);

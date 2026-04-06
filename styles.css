@@ -732,6 +732,36 @@ main > section.panel.screen-exit.screen-exit-active {
   animation: welcomeTextRise 0.55s ease-out 0.46s both;
 }
 
+.auth-card {
+  width: min(820px, 100%);
+}
+
+.auth-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.auth-actions {
+  margin-top: 8px;
+}
+
+.auth-status {
+  margin-top: 14px;
+}
+
+.auth-status.success {
+  color: #166534;
+}
+
+.auth-status.error {
+  color: #b91c1c;
+}
+
+.required-mark {
+  color: #dc2626;
+}
+
 .field-group {
   margin-bottom: 14px;
 }
@@ -1313,6 +1343,24 @@ select option {
 #question-text {
   line-height: 1.9;
   margin: 18px 0;
+}
+
+.question-points-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  color: #92400e;
+  font-weight: 800;
+}
+
+.question-points-live strong {
+  color: #b45309;
+  font-size: 1.05rem;
 }
 
 .answers-grid {

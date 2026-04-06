@@ -86,6 +86,64 @@
         </div>
       </section>
 
+      <section id="auth-screen" class="panel hidden">
+        <div class="welcome-screen">
+          <div class="welcome-card auth-card">
+            <span class="badge welcome-badge">حماية المعلم</span>
+            <h2 id="auth-title">تسجيل المعلم لأول مرة</h2>
+            <p id="auth-description">أدخل بيانات المدرسة والمعلم مرة واحدة، ثم اختر اسم مستخدم وكلمة مرور خاصين بالمعلم لإدارة الجلسة.</p>
+
+            <div id="auth-register-panel" class="auth-panel">
+              <div class="branding-fields auth-grid">
+                <div class="field-group">
+                  <label for="auth-school-name">اسم المدرسة <span class="required-mark">*</span></label>
+                  <input id="auth-school-name" type="text" placeholder="اكتب اسم المدرسة" maxlength="60" />
+                </div>
+                <div class="field-group">
+                  <label for="auth-teacher-name">اسم المعلم <span class="required-mark">*</span></label>
+                  <input id="auth-teacher-name" type="text" placeholder="اكتب اسم المعلم" maxlength="60" />
+                </div>
+              </div>
+              <div class="field-group">
+                <label for="auth-logo-upload">شعار المدرسة (اختياري)</label>
+                <input id="auth-logo-upload" type="file" accept="image/*" />
+              </div>
+              <div class="branding-fields auth-grid">
+                <div class="field-group">
+                  <label for="auth-register-username">اسم المستخدم للمعلم <span class="required-mark">*</span></label>
+                  <input id="auth-register-username" type="text" placeholder="اسم المستخدم" maxlength="40" />
+                </div>
+                <div class="field-group">
+                  <label for="auth-register-password">كلمة المرور <span class="required-mark">*</span></label>
+                  <input id="auth-register-password" type="password" placeholder="كلمة المرور" maxlength="60" />
+                </div>
+              </div>
+              <div class="action-row welcome-actions auth-actions">
+                <button id="auth-register-btn" class="primary-btn" type="button">إنشاء حساب المعلم</button>
+              </div>
+            </div>
+
+            <div id="auth-login-panel" class="auth-panel hidden">
+              <div class="branding-fields auth-grid">
+                <div class="field-group">
+                  <label for="auth-login-username">اسم المستخدم</label>
+                  <input id="auth-login-username" type="text" placeholder="اسم المستخدم" maxlength="40" />
+                </div>
+                <div class="field-group">
+                  <label for="auth-login-password">كلمة المرور</label>
+                  <input id="auth-login-password" type="password" placeholder="كلمة المرور" maxlength="60" />
+                </div>
+              </div>
+              <div class="action-row welcome-actions auth-actions">
+                <button id="auth-login-btn" class="primary-btn" type="button">دخول المعلم</button>
+              </div>
+            </div>
+
+            <p id="auth-status" class="question-editor-status auth-status">اسم المدرسة إلزامي، والشعار اختياري، وكلمة المرور مخصصة للمعلم فقط.</p>
+          </div>
+        </div>
+      </section>
+
       <section id="intro-screen" class="panel hidden">
         <div class="welcome-screen">
           <div class="welcome-card">
@@ -325,6 +383,7 @@
           </div>
 
           <h2 id="question-text">سيظهر السؤال هنا</h2>
+          <div id="question-points-live" class="question-points-live">النقاط المتبقية لهذا السؤال: <strong id="question-points-label">50</strong></div>
           <div id="answers-container" class="answers-grid"></div>
 
           <div class="assistant-card hidden">
