@@ -1509,6 +1509,17 @@ function revealTeacherStartSettings() {
   document.body.classList.add("show-start-settings");
 }
 
+function launchTeacherInstantRound() {
+  if (IS_CONTESTANT_VIEW) return;
+
+  hideTeacherStartSettings();
+  showScreen("start");
+
+  window.setTimeout(() => {
+    startGame();
+  }, SCREEN_TRANSITION_MS + 40);
+}
+
 function setRecoveryStatus(message, type = "") {
   if (!recoveryStatus) return;
 
@@ -1753,9 +1764,8 @@ function registerTeacherAccount() {
     authLoginPasswordInput.value = "";
   }
 
-  setAuthStatus("تم إنشاء حساب المعلم بنجاح، ويمكنك الآن إدارة الجلسة.", "success");
-  showScreen("start");
-  scheduleAutoIntroMusic();
+  setAuthStatus("تم إنشاء حساب المعلم بنجاح، وجارٍ تجهيز الجولة الآن.", "success");
+  launchTeacherInstantRound();
 }
 
 function loginTeacherAccount() {
@@ -1780,9 +1790,8 @@ function loginTeacherAccount() {
   if (authForgotBtn) {
     authForgotBtn.textContent = "نسيت اسم المستخدم أو كلمة المرور";
   }
-  setAuthStatus("تم تسجيل دخول المعلم بنجاح.", "success");
-  showScreen("start");
-  scheduleAutoIntroMusic();
+  setAuthStatus("تم تسجيل دخول المعلم بنجاح، وجارٍ فتح الجولة مباشرة.", "success");
+  launchTeacherInstantRound();
 }
 
 function handleTeacherLogoUpload(event) {
