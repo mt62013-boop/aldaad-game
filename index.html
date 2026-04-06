@@ -10,14 +10,14 @@
   <meta name="application-name" content="الضاد" />
   <meta name="apple-mobile-web-app-title" content="الضاد" />
   <title>الضاد | تعلم بمرح</title>
-  <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="icon" href="app-icon-192.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="logo-logo.png" />
+  <link rel="manifest" href="game/manifest.webmanifest" />
+  <link rel="icon" href="game/app-icon-192.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="game/logo-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa+Ink:wght@400;700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="preload" href="questions-data.json" as="fetch" crossorigin="anonymous" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="preload" href="game/questions-data.json" as="fetch" crossorigin="anonymous" />
+  <link rel="stylesheet" href="game/styles.css" />
 </head>
 <body>
   <span class="page-corner top-right"><span></span></span>
@@ -29,7 +29,7 @@
 
   <div id="install-splash" class="install-splash hidden" aria-hidden="true">
     <div class="install-splash-card">
-      <img src="logo-logo.png?v=3" alt="شعار لعبة الضاد" class="install-splash-logo" />
+      <img src="game/logo-logo.png?v=3" alt="شعار لعبة الضاد" class="install-splash-logo" />
       <span class="badge">نسخة التطبيق</span>
       <strong>الضاد — تعلم بمرح</strong>
       <p id="install-splash-message">جار تجهيز التجربة التفاعلية للعمل بسرعة حتى بدون إنترنت.</p>
@@ -50,7 +50,7 @@
       </div>
 
       <div class="brand-card">
-        <img src="school-logo.png" alt="شعار مدرسة أكاديمية الموهبة المشتركة" class="school-logo" />
+        <img src="game/school-logo.png" alt="شعار مدرسة أكاديمية الموهبة المشتركة" class="school-logo" />
         <div class="brand-meta">
           <strong id="school-name-display">مدرسة أكاديمية الموهبة المشتركة</strong>
           <span id="teacher-name-display">إعداد المعلم/ة: معلم اللغة العربية</span>
@@ -66,7 +66,7 @@
       <section id="splash-screen" class="panel">
         <div class="splash-screen-wrap">
           <div class="splash-card">
-            <img src="logo-logo.png?v=2" alt="شعار لعبة الضاد" class="game-logo-image splash-game-logo" />
+            <img src="game/logo-logo.png?v=2" alt="شعار لعبة الضاد" class="game-logo-image splash-game-logo" />
             <span class="badge splash-badge">نستعد لجرعة من البهجة</span>
             <div class="text-logo-wrap splash-logo-wrap">
               <span class="text-logo-mark">✦</span>
@@ -353,8 +353,10 @@
               <div><strong>نوع النشاط:</strong> فرق أو حتى 30 طالبًا بشكل فردي</div>
             </div>
 
+
             <div class="welcome-audio-row start-optional">
               <button id="intro-music-btn" class="ghost-btn" type="button">موسيقى البداية</button>
+              <button id="go-to-auth-btn" class="ghost-btn" type="button">لوحة المعلم</button>
             </div>
 
             <div class="field-group teacher-security-box start-optional">
@@ -541,6 +543,6 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="game/script.js"></script>
 </body>
 </html>

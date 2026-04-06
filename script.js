@@ -829,6 +829,7 @@ fastestNameInput?.addEventListener("keydown", (event) => {
     applyTargetSelection(undefined, { name: fastestNameInput.value, buzz: true });
   }
 });
+
 fullscreenBtn.addEventListener("click", async () => {
   if (!document.fullscreenElement) {
     await document.documentElement.requestFullscreen();
@@ -836,6 +837,15 @@ fullscreenBtn.addEventListener("click", async () => {
     await document.exitFullscreen();
   }
 });
+
+// زر الانتقال اليدوي إلى شاشة المعلم
+const goToAuthBtn = document.getElementById("go-to-auth-btn");
+if (goToAuthBtn) {
+  goToAuthBtn.addEventListener("click", () => {
+    showScreen("auth");
+    syncTeacherAuthView();
+  });
+}
 
 installAppBtn?.addEventListener("click", async () => {
   if (!deferredInstallPrompt) {
