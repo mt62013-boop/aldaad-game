@@ -526,18 +526,20 @@ main > section.panel.screen-exit.screen-exit-active {
 #start-screen .field-group,
 #start-screen .branding-actions,
 #start-screen .question-editor-panel,
+#start-screen .advanced-settings-panel,
 #start-screen .info-strip,
-#start-screen .welcome-audio-row {
+#start-screen .welcome-audio-row,
+#start-screen .quick-start-actions {
   margin-bottom: 10px;
 }
 
-#start-screen .start-optional {
+body.contestant-view #start-screen .start-optional {
   display: none !important;
 }
 
 #start-screen #start-btn {
   width: 100%;
-  margin-top: 12px;
+  margin-top: 4px;
 }
 
 #start-screen .branding-fields,
@@ -546,14 +548,30 @@ main > section.panel.screen-exit.screen-exit-active {
   gap: 8px;
 }
 
-#start-screen .sidebar-card {
-  padding: 14px;
+.advanced-settings-panel {
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid rgba(108, 140, 255, 0.16);
 }
 
-#start-screen .sidebar-card ul {
-  margin: 8px 0 12px;
-  line-height: 1.65;
-  font-size: 0.92rem;
+.advanced-settings-panel > summary {
+  cursor: pointer;
+  font-weight: 800;
+  color: var(--primary-dark);
+  list-style: none;
+}
+
+.advanced-settings-panel > summary::-webkit-details-marker {
+  display: none;
+}
+
+.quick-start-actions {
+  justify-content: center;
+}
+
+.compact-leaderboard {
+  margin-top: 10px;
 }
 
 .splash-screen-wrap,
@@ -814,20 +832,6 @@ select option {
   color: #dbe4f0;
   font-size: 0.92rem;
   line-height: 1.7;
-}
-
-.fixed-title-box {
-  margin-bottom: 14px;
-}
-
-.fixed-branding-value {
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: var(--surface-gradient);
-  border: 1px solid var(--surface-border);
-  box-shadow: var(--surface-shadow);
-  font-weight: 800;
-  color: var(--primary-dark);
 }
 
 .branding-actions {
@@ -1174,7 +1178,6 @@ select option {
 }
 
 .info-strip div,
-.sidebar-card,
 .result-box,
 .hud-item,
 .feedback,
@@ -1195,17 +1198,6 @@ select option {
 .info-strip div {
   padding: 10px 12px;
   color: var(--text);
-}
-
-.sidebar-card {
-  padding: 16px;
-  color: var(--text);
-}
-
-.sidebar-card ul {
-  margin: 10px 0 18px;
-  padding-right: 18px;
-  line-height: 1.9;
 }
 
 .leaderboard-box {
@@ -2135,8 +2127,7 @@ body.calm-mode *::after {
 
   .brand-meta span,
   .branding-note,
-  .question-editor-help,
-  .sidebar-card ul {
+  .question-editor-help {
     font-size: 0.84rem;
     line-height: 1.5;
   }
@@ -2153,8 +2144,7 @@ body.calm-mode *::after {
 
   input,
   textarea,
-  select,
-  .fixed-branding-value {
+  select {
     padding: 8px 10px;
     border-radius: 12px;
   }
@@ -2182,13 +2172,5 @@ body.calm-mode *::after {
 
   #start-screen .panel-grid {
     gap: 10px;
-  }
-
-  #start-screen .sidebar-card {
-    padding: 12px;
-  }
-
-  #start-screen .sidebar-card ul {
-    margin: 6px 0 10px;
   }
 }

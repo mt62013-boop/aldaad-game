@@ -1317,6 +1317,10 @@ function startGame() {
     const emptyTeam = teamNameInputs.slice(0, 2).find((input) => !input.value.trim());
     if (emptyTeam) {
       setQuestionEditorStatus("اكتب اسم الفريق الأول والثاني قبل بدء اللعبة.", "error");
+      const advancedSettingsPanel = document.querySelector(".advanced-settings-panel");
+      if (advancedSettingsPanel) {
+        advancedSettingsPanel.open = true;
+      }
       emptyTeam.focus();
       return;
     }
@@ -1328,6 +1332,10 @@ function startGame() {
 
     if (!enteredStudentNames.length) {
       setQuestionEditorStatus("اكتب اسم الطالب أو الطلاب المشاركين قبل بدء اللعبة.", "error");
+      const advancedSettingsPanel = document.querySelector(".advanced-settings-panel");
+      if (advancedSettingsPanel) {
+        advancedSettingsPanel.open = true;
+      }
       studentNamesInput?.focus();
       return;
     }
@@ -1341,7 +1349,14 @@ function startGame() {
   if (!filtered.length) {
     const selectedLessonLabel = LESSON_LABELS[gameState.lessonFilter] || LESSON_LABELS[DEFAULT_LESSON_FILTER];
     setQuestionEditorStatus(`لا توجد أسئلة مناسبة ضمن ${selectedLessonLabel} والمجال الحالي. عدّل الأسئلة أو اختر درسًا/مجالًا آخر.`, "error");
-    document.querySelector(".question-editor-panel").open = true;
+    const advancedSettingsPanel = document.querySelector(".advanced-settings-panel");
+    if (advancedSettingsPanel) {
+      advancedSettingsPanel.open = true;
+    }
+    const editorPanel = document.querySelector(".question-editor-panel");
+    if (editorPanel) {
+      editorPanel.open = true;
+    }
     return;
   }
 

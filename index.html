@@ -198,25 +198,13 @@
         <div class="panel-grid minimal-start-grid">
           <div class="start-core">
             <h2>ابدأ الجولة</h2>
-            <p class="start-screen-note">صُمِّمت هذه الجولة لتمنح الطلاب أجواءً أخفّ وأكثر بهجة؛ تشغيل سريع، واجهة مريحة، وتنافس جميل سواء داخل الصف أو عن بُعد.</p>
-            <div class="field-group session-share-box">
-              <label>استخدام الجلسة عن بُعد أو فعليًا</label>
-              <div class="director-actions">
-                <button id="copy-session-link-btn" class="ghost-btn" type="button">نسخ رابط شاشة المتسابقين</button>
-              </div>
-              <p id="session-link-status" class="branding-note">يمكنك مشاركة رابط شاشة المتسابقين عبر `Teams` أو `Zoom` أو `Google Meet`، مع بقاء جميع صلاحيات الإعداد والتحكم لدى المعلم فقط.</p>
-            </div>
+            <p class="start-screen-note">واجهة مبسطة جدًا للمعلم: أدخل اسم الحصة وبيانات المدرسة ثم ابدأ مباشرة، أما بقية الإعدادات فهي اختيارية عند الحاجة فقط.</p>
             <div class="field-group">
               <label for="player-name">اسم الحصة أو الصف</label>
               <input id="player-name" type="text" placeholder="مثال: 12 أدبي - الشعبة أ" maxlength="30" />
             </div>
 
-            <div class="field-group fixed-title-box start-optional">
-              <label>اسم اللعبة</label>
-              <div class="fixed-branding-value">الضاد — تعلم بمرح</div>
-            </div>
-
-            <div class="branding-fields start-optional">
+            <div class="branding-fields">
               <div class="field-group">
                 <label for="school-name">اسم المدرسة</label>
                 <input id="school-name" type="text" value="مدرسة أكاديمية الموهبة المشتركة" maxlength="50" />
@@ -226,25 +214,37 @@
                 <input id="teacher-name" type="text" value="معلم اللغة العربية" maxlength="50" />
               </div>
             </div>
-            <div class="field-group start-optional">
-              <label for="logo-upload">رفع الشعار الأصلي</label>
-              <input id="logo-upload" type="file" accept="image/*" />
-            </div>
-            <p class="branding-note start-optional">يمكنك تعديل اسم المعلم واسم المدرسة من هنا مباشرة، كما يمكنك اختيار الصورة الأصلية للشعار من جهازك، وسيتم حفظها تلقائيًا داخل التطبيق، بينما يبقى اسم اللعبة ثابتًا.</p>
-            <div class="branding-actions start-optional">
-              <button id="reset-branding-btn" class="secondary-btn" type="button">إعادة القيم الافتراضية</button>
-            </div>
 
-            <div class="field-group start-optional calm-mode-box">
-              <label for="calm-mode-toggle">الوضع الهادئ جدًا للطلاب</label>
-              <label class="calm-toggle">
-                <input id="calm-mode-toggle" type="checkbox" />
-                <span>تفعيل ألوان أكثر راحة وتقليل الحركة داخل الشاشات</span>
-              </label>
-              <p id="calm-mode-note" class="branding-note">يمكن للمعلم تفعيل هذا الوضع لتقديم تجربة بصرية ألطف وأكثر هدوءًا.</p>
-            </div>
+            <details class="advanced-settings-panel start-optional">
+              <summary>إعدادات إضافية للمعلم (اختياري)</summary>
 
-            <details class="question-editor-panel start-optional">
+              <div class="field-group session-share-box">
+                <label>استخدام الجلسة عن بُعد أو فعليًا</label>
+                <div class="director-actions">
+                  <button id="copy-session-link-btn" class="ghost-btn" type="button">نسخ رابط شاشة المتسابقين</button>
+                </div>
+                <p id="session-link-status" class="branding-note">يمكنك مشاركة رابط شاشة المتسابقين عبر `Teams` أو `Zoom` أو `Google Meet`، مع بقاء جميع صلاحيات الإعداد والتحكم لدى المعلم فقط.</p>
+              </div>
+
+              <div class="field-group start-optional">
+                <label for="logo-upload">رفع الشعار الأصلي</label>
+                <input id="logo-upload" type="file" accept="image/*" />
+              </div>
+              <p class="branding-note start-optional">يمكنك تعديل اسم المعلم واسم المدرسة من هنا مباشرة، كما يمكنك اختيار الصورة الأصلية للشعار من جهازك، وسيتم حفظها تلقائيًا داخل التطبيق.</p>
+              <div class="branding-actions start-optional">
+                <button id="reset-branding-btn" class="secondary-btn" type="button">إعادة القيم الافتراضية</button>
+              </div>
+
+              <div class="field-group start-optional calm-mode-box">
+                <label for="calm-mode-toggle">الوضع الهادئ جدًا للطلاب</label>
+                <label class="calm-toggle">
+                  <input id="calm-mode-toggle" type="checkbox" />
+                  <span>تفعيل ألوان أكثر راحة وتقليل الحركة داخل الشاشات</span>
+                </label>
+                <p id="calm-mode-note" class="branding-note">يمكن للمعلم تفعيل هذا الوضع لتقديم تجربة بصرية ألطف وأكثر هدوءًا.</p>
+              </div>
+
+              <details class="question-editor-panel start-optional">
               <summary>تعديل الأسئلة من داخل التطبيق</summary>
               <p class="question-editor-help">
                 يمكنك تعديل الأسئلة لتناسب أي موضوع، مع الإبقاء على التصنيفات: `الفهم والاستيعاب` أو `فنون البلاغة` أو `السلامة اللغوية` أو `الثروة اللغوية`.
@@ -276,11 +276,11 @@
                 <div id="team-inputs" class="team-inputs-grid">
                   <div class="team-input-wrap">
                     <label for="team-1">اسم الفريق الأول</label>
-                    <input id="team-1" class="team-name-input" type="text" value="" placeholder="اكتب اسم الفريق الأول" maxlength="25" required />
+                    <input id="team-1" class="team-name-input" type="text" value="الفريق الأول" placeholder="اكتب اسم الفريق الأول" maxlength="25" required />
                   </div>
                   <div class="team-input-wrap">
                     <label for="team-2">اسم الفريق الثاني</label>
-                    <input id="team-2" class="team-name-input" type="text" value="" placeholder="اكتب اسم الفريق الثاني" maxlength="25" required />
+                    <input id="team-2" class="team-name-input" type="text" value="الفريق الثاني" placeholder="اكتب اسم الفريق الثاني" maxlength="25" required />
                   </div>
                 </div>
               </div>
@@ -409,27 +409,18 @@
               </div>
             </div>
 
-            <button id="start-btn" class="primary-btn" type="button">ابدأ التحدي الآن</button>
-          </div>
+              <div class="leaderboard-box compact-leaderboard start-optional">
+                <h4>أفضل النتائج</h4>
+                <ol id="leaderboard-list">
+                  <li>ابدأ أول جولة لتسجيل النتيجة.</li>
+                </ol>
+              </div>
+            </details>
 
-          <aside class="sidebar-card start-optional">
-            <h3>مناسبة للتدريس التفاعلي</h3>
-            <ul>
-              <li>أسئلة مباشرة من موضوع الدرس الرابع للصف الثاني عشر.</li>
-              <li>إمكانية التبديل بين الفهم والاستيعاب والبلاغة والسلامة اللغوية والثروة اللغوية.</li>
-              <li>تغذية راجعة فورية بعد كل إجابة.</li>
-              <li>مساعد ذكي يعطي تلميحًا تربويًا دون كشف الإجابة.</li>
-              <li>دعم صوتي اختياري لقراءة السؤال أو الشرح.</li>
-              <li>يمكن فتحها مباشرة من المتصفح ومشاركتها على Teams.</li>
-            </ul>
-
-            <div class="leaderboard-box">
-              <h4>أفضل النتائج</h4>
-              <ol id="leaderboard-list">
-                <li>ابدأ أول جولة لتسجيل النتيجة.</li>
-              </ol>
+            <div class="action-row quick-start-actions">
+              <button id="start-btn" class="primary-btn" type="button">ابدأ التحدي الآن</button>
             </div>
-          </aside>
+          </div>
         </div>
       </section>
 
