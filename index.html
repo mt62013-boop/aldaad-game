@@ -103,6 +103,27 @@
                 <label for="auth-logo-upload">شعار المدرسة (اختياري)</label>
                 <input id="auth-logo-upload" type="file" accept="image/*" />
               </div>
+              <div class="field-group auth-recovery-box">
+                <label>بيانات الاسترجاع عند نسيان الدخول</label>
+                <div class="auth-grid">
+                  <div class="field-group">
+                    <label for="auth-recovery-method">وسيلة الاسترجاع</label>
+                    <select id="auth-recovery-method">
+                      <option value="phone" selected>رقم هاتف</option>
+                      <option value="email">بريد إلكتروني</option>
+                    </select>
+                  </div>
+                  <div id="auth-recovery-country-wrap" class="field-group">
+                    <label for="auth-recovery-country">الدولة العربية</label>
+                    <select id="auth-recovery-country"></select>
+                  </div>
+                  <div class="field-group">
+                    <label for="auth-recovery-value">رقم الهاتف أو الإيميل</label>
+                    <input id="auth-recovery-value" type="tel" inputmode="numeric" placeholder="مثال: 98765432" maxlength="80" />
+                  </div>
+                </div>
+                <p class="branding-note">الدول المتاحة مقيدة بدول الوطن العربي فقط، وعند اختيار الهاتف يظهر كود الدولة بجوار اسمها.</p>
+              </div>
               <div class="branding-fields auth-grid">
                 <div class="field-group">
                   <label for="auth-register-username">اسم المستخدم للمعلم <span class="required-mark">*</span></label>
@@ -131,6 +152,40 @@
               </div>
               <div class="action-row welcome-actions auth-actions">
                 <button id="auth-login-btn" class="primary-btn" type="button">دخول المعلم</button>
+                <button id="auth-forgot-btn" class="secondary-btn" type="button">نسيت اسم المستخدم أو كلمة المرور</button>
+              </div>
+              <div id="auth-recovery-panel" class="password-panel hidden">
+                <div class="auth-grid">
+                  <div class="field-group">
+                    <label for="recovery-method">وسيلة الاسترجاع</label>
+                    <select id="recovery-method">
+                      <option value="phone" selected>رقم هاتف</option>
+                      <option value="email">بريد إلكتروني</option>
+                    </select>
+                  </div>
+                  <div id="recovery-country-wrap" class="field-group">
+                    <label for="recovery-country">الدولة العربية</label>
+                    <select id="recovery-country"></select>
+                  </div>
+                  <div class="field-group">
+                    <label for="recovery-value">رقم الهاتف أو الإيميل المسجل</label>
+                    <input id="recovery-value" type="tel" inputmode="numeric" placeholder="أدخل بيانات الاسترجاع" maxlength="80" />
+                  </div>
+                </div>
+                <div class="auth-grid">
+                  <div class="field-group">
+                    <label for="recovery-new-password">كلمة مرور جديدة (اختياري)</label>
+                    <input id="recovery-new-password" type="password" placeholder="أدخل كلمة جديدة عند الحاجة" maxlength="60" />
+                  </div>
+                  <div class="field-group">
+                    <label for="recovery-confirm-password">تأكيد كلمة المرور الجديدة</label>
+                    <input id="recovery-confirm-password" type="password" placeholder="أعد كتابة الكلمة الجديدة" maxlength="60" />
+                  </div>
+                </div>
+                <div class="action-row welcome-actions auth-actions">
+                  <button id="recover-account-btn" class="primary-btn" type="button">استرجاع البيانات</button>
+                </div>
+                <p id="recovery-status" class="branding-note password-change-status">عند تطابق بيانات الاسترجاع يظهر اسم المستخدم، ويمكنك أيضًا تعيين كلمة مرور جديدة.</p>
               </div>
             </div>
 
@@ -178,6 +233,15 @@
             <p class="branding-note start-optional">يمكنك تعديل اسم المعلم واسم المدرسة من هنا مباشرة، كما يمكنك اختيار الصورة الأصلية للشعار من جهازك، وسيتم حفظها تلقائيًا داخل التطبيق، بينما يبقى اسم اللعبة ثابتًا.</p>
             <div class="branding-actions start-optional">
               <button id="reset-branding-btn" class="secondary-btn" type="button">إعادة القيم الافتراضية</button>
+            </div>
+
+            <div class="field-group start-optional calm-mode-box">
+              <label for="calm-mode-toggle">الوضع الهادئ جدًا للطلاب</label>
+              <label class="calm-toggle">
+                <input id="calm-mode-toggle" type="checkbox" />
+                <span>تفعيل ألوان أكثر راحة وتقليل الحركة داخل الشاشات</span>
+              </label>
+              <p id="calm-mode-note" class="branding-note">يمكن للمعلم تفعيل هذا الوضع لتقديم تجربة بصرية ألطف وأكثر هدوءًا.</p>
             </div>
 
             <details class="question-editor-panel start-optional">
