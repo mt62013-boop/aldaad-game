@@ -1,6 +1,7 @@
 const DEFAULT_QUESTIONS_PER_GAME = 12;
 const MAX_QUESTIONS_PER_GAME = 999;
-const TIME_PER_QUESTION = 25;
+const TIME_PER_QUESTION = 50;
+const MAX_POINTS_PER_QUESTION = 50;
 const SCREEN_TRANSITION_MS = 280;
 const SPLASH_DELAY_MS = 1150;
 const STORAGE_KEY = "arabic-grade12-islam-positive-leaderboard";
@@ -419,6 +420,8 @@ function applyRolePermissions() {
   if (startBtn) {
     startBtn.textContent = "ابدأ المنافسة";
   }
+
+  syncContestantStartAvailability();
 }
 
 function buildSessionLink() {
@@ -505,6 +508,7 @@ questionFormatRatioSelect?.addEventListener("change", () => {
   saveRoundSettings();
 });
 
+playerNameInput?.addEventListener("input", syncContestantStartAvailability);
 schoolNameInput.addEventListener("input", updateBranding);
 teacherNameInput.addEventListener("input", updateBranding);
 logoUploadInput.addEventListener("change", handleLogoUpload);
@@ -1312,6 +1316,18 @@ function getCurrentTeam() {
   return gameState.teams[gameState.currentTeamIndex];
 }
 
+function getQuestionPointsByTime() {
+  return Math.max(0, Math.min(MAX_POINTS_PER_QUESTION, Number(gameState.timer) || 0));
+}
+
+function syncContestantStartAvailability() {
+  if (!IS_CONTESTANT_VIEW || !startBtn || !playerNameInput) return;
+
+  const hasName = !!playerNameInput.value.trim();
+  startBtn.disabled = !hasName;
+  startBtn.setAttribute("aria-disabled", hasName ? "false" : "true");
+}
+
 function setAnswerButtonsEnabled(enabled) {
   Array.from(document.querySelectorAll(".answer-btn")).forEach((button) => {
     button.disabled = gameState.answered ? true : !(enabled && gameState.buzzLocked);
@@ -2047,6 +2063,7 @@ function lockAnswer(selectedIndex) {
   const responderName = gameState.currentTeamIndex >= 0 ? currentTeam.name : "الجميع";
   const buttons = Array.from(document.querySelectorAll(".answer-btn"));
   const isCorrect = selectedIndex === question.correctIndex;
+  const questionPoints = getQuestionPointsByTime();
 
   if (!gameState.categoryStats[question.category]) {
     gameState.categoryStats[question.category] = { correct: 0, total: 0 };
@@ -2067,22 +2084,26 @@ function lockAnswer(selectedIndex) {
   let message = "";
   if (selectedIndex === -1) {
     feedbackBox.className = "feedback warning";
-    message = `${responderName}: انتهى الوقت على الجميع. الإجابة الصحيحة هي <strong>${question.options[question.correctIndex]}</strong><br><strong>الشرح:</strong> ${question.explanation}<br><strong>توسيع الفكرة:</strong> ${expandedExplanation}`;
+    message = `${responderName}: انتهى الوقت، ولم تُحتسب أي نقاط لهذا السؤال. الإجابة الصحيحة هي <strong>${question.options[question.correctIndex]}</strong><br><strong>الشرح:</strong> ${question.explanation}<br><strong>توسيع الفكرة:</strong> ${expandedExplanation}`;
     playFailSound();
   } else if (isCorrect) {
-    const earnedPoints = 10;
+    const earnedPoints = questionPoints;
     currentTeam.score += earnedPoints;
     currentTeam.correct += 1;
-    gameState.score += earnedPoints;
+    gameState.score = gameState.teams.reduce((sum, participant) => sum + participant.score, 0);
     gameState.correctAnswers += 1;
     gameState.categoryStats[question.category].correct += 1;
     scoreLabel.textContent = String(currentTeam.score);
     feedbackBox.className = "feedback success";
-    message = `${currentTeam.name}: كان الأسرع وأجاب إجابة صحيحة ✅ أضيفت <strong>10</strong> نقاط إلى رصيده.<br><strong>الشرح:</strong> ${question.explanation}<br><strong>توسيع الفكرة:</strong> ${expandedExplanation}`;
+    message = `${currentTeam.name}: إجابة صحيحة ✅ حصل على <strong>${earnedPoints}</strong> نقطة من أصل <strong>${MAX_POINTS_PER_QUESTION}</strong>، مع خصم نقطة واحدة عن كل ثانية تأخير.<br><strong>الشرح:</strong> ${question.explanation}<br><strong>توسيع الفكرة:</strong> ${expandedExplanation}`;
     playSuccessSound();
   } else {
+    const penaltyPoints = questionPoints;
+    currentTeam.score -= penaltyPoints;
+    gameState.score = gameState.teams.reduce((sum, participant) => sum + participant.score, 0);
+    scoreLabel.textContent = String(currentTeam.score);
     feedbackBox.className = "feedback error";
-    message = `${currentTeam.name}: كان الأسرع لكن الإجابة غير صحيحة ❌ الصحيح هو <strong>${question.options[question.correctIndex]}</strong><br><strong>الشرح:</strong> ${question.explanation}<br><strong>توسيع الفكرة:</strong> ${expandedExplanation}`;
+    message = `${currentTeam.name}: الإجابة غير صحيحة ❌ خُصمت <strong>${penaltyPoints}</strong> نقطة كاملة لهذا السؤال، والصحيح هو <strong>${question.options[question.correctIndex]}</strong><br><strong>الشرح:</strong> ${question.explanation}<br><strong>توسيع الفكرة:</strong> ${expandedExplanation}`;
     playFailSound();
   }
 
