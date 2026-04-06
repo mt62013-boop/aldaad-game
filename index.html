@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#16324f" />
+  <meta name="theme-color" content="#6c8cff" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -36,15 +36,10 @@
     </div>
   </div>
 
-  <div class="app-watermark top-left" aria-hidden="true">طه كامل</div>
-  <div class="app-watermark top-right" aria-hidden="true">طه كامل</div>
-  <div class="app-watermark bottom-left" aria-hidden="true">طه كامل</div>
-  <div class="app-watermark bottom-right" aria-hidden="true">طه كامل</div>
-
   <div class="app-shell">
     <header class="hero">
       <div class="hero-main">
-        <span class="badge">جاهزة للحصة والويب وTeams</span>
+        <span class="badge">مساحة تعلم مبهجة للحصة والويب ✨</span>
         <div class="hero-game-logo-wrap">
           <img src="logo-logo.png?v=3" alt="شعار لعبة الضاد" class="hero-game-logo" />
         </div>
@@ -72,13 +67,13 @@
         <div class="splash-screen-wrap">
           <div class="splash-card">
             <img src="logo-logo.png?v=2" alt="شعار لعبة الضاد" class="game-logo-image splash-game-logo" />
-            <span class="badge splash-badge">جاري التحميل</span>
+            <span class="badge splash-badge">نستعد لجرعة من البهجة</span>
             <div class="text-logo-wrap splash-logo-wrap">
               <span class="text-logo-mark">✦</span>
               <h2 class="text-logo-title splash-logo-title">الضاد</h2>
               <span class="text-logo-mark">✦</span>
             </div>
-            <p class="splash-subtitle">تعلم بمرح</p>
+            <p class="splash-subtitle">لغة جميلة، تفاعل لطيف، وتحدٍّ ممتع</p>
             <div class="splash-loader-track">
               <span class="splash-loader-bar"></span>
             </div>
@@ -144,37 +139,11 @@
         </div>
       </section>
 
-      <section id="intro-screen" class="panel hidden">
-        <div class="welcome-screen">
-          <div class="welcome-card">
-            <img id="intro-logo" src="logo-logo.png?v=2" alt="شعار لعبة الضاد" class="intro-school-logo intro-game-logo" />
-            <span class="badge welcome-badge">مرحبًا بكم في لعبة الضاد</span>
-            <h2>تجربة عربية تفاعلية تبدأ هنا</h2>
-            <p>
-              أهلاً بكم في حصة ممتعة تجمع بين التنافس والتعلّم، وتُعرض بهوية المدرسة واسم المعلم قبل بدء الجولة.
-            </p>
-            <div class="welcome-meta">
-              <div>
-                <strong>المدرسة</strong>
-                <span id="intro-school-display">مدرسة أكاديمية الموهبة المشتركة</span>
-              </div>
-              <div>
-                <strong>المعلم</strong>
-                <span id="intro-teacher-display">إعداد المعلم/ة: معلم اللغة العربية</span>
-              </div>
-            </div>
-            <div class="action-row welcome-actions">
-              <button id="intro-continue-btn" class="primary-btn" type="button">متابعة</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section id="start-screen" class="panel hidden">
         <div class="panel-grid minimal-start-grid">
           <div class="start-core">
             <h2>ابدأ الجولة</h2>
-            <p class="start-screen-note">يمكنك تشغيلها داخل الصف أو عن بُعد: المعلم يحتفظ بالتحكم الكامل في الإعدادات، بينما يُرسل رابطًا مستقلًا للطلاب أو الفرق للدخول كشاشة متسابق فقط.</p>
+            <p class="start-screen-note">صُمِّمت هذه الجولة لتمنح الطلاب أجواءً أخفّ وأكثر بهجة؛ تشغيل سريع، واجهة مريحة، وتنافس جميل سواء داخل الصف أو عن بُعد.</p>
             <div class="field-group session-share-box">
               <label>استخدام الجلسة عن بُعد أو فعليًا</label>
               <div class="director-actions">
@@ -322,6 +291,34 @@
 
             <div class="welcome-audio-row start-optional">
               <button id="intro-music-btn" class="ghost-btn" type="button">موسيقى البداية</button>
+            </div>
+
+            <div class="field-group teacher-security-box start-optional">
+              <label>إدارة حساب المعلم</label>
+              <div class="director-actions teacher-security-actions">
+                <button id="toggle-password-panel-btn" class="secondary-btn" type="button">تغيير كلمة المرور</button>
+                <button id="teacher-logout-btn" class="ghost-btn" type="button">خروج المعلم</button>
+              </div>
+              <div id="password-panel" class="password-panel hidden">
+                <div class="auth-grid">
+                  <div class="field-group">
+                    <label for="current-password">كلمة المرور الحالية</label>
+                    <input id="current-password" type="password" placeholder="أدخل الكلمة الحالية" maxlength="60" />
+                  </div>
+                  <div class="field-group">
+                    <label for="new-password">كلمة المرور الجديدة</label>
+                    <input id="new-password" type="password" placeholder="أدخل كلمة مرور جديدة" maxlength="60" />
+                  </div>
+                  <div class="field-group">
+                    <label for="confirm-password">تأكيد كلمة المرور الجديدة</label>
+                    <input id="confirm-password" type="password" placeholder="أعد كتابة الكلمة الجديدة" maxlength="60" />
+                  </div>
+                </div>
+                <div class="director-actions teacher-security-actions">
+                  <button id="save-password-btn" class="primary-btn" type="button">حفظ كلمة المرور الجديدة</button>
+                </div>
+                <p id="password-change-status" class="branding-note password-change-status">يمكنك تغيير كلمة مرور المعلم في أي وقت بعد إدخال الحالية.</p>
+              </div>
             </div>
 
             <button id="start-btn" class="primary-btn" type="button">ابدأ التحدي الآن</button>

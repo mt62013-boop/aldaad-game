@@ -2,8 +2,8 @@ const DEFAULT_QUESTIONS_PER_GAME = 12;
 const MAX_QUESTIONS_PER_GAME = 999;
 const TIME_PER_QUESTION = 50;
 const MAX_POINTS_PER_QUESTION = 50;
-const SCREEN_TRANSITION_MS = 280;
-const SPLASH_DELAY_MS = 1150;
+const SCREEN_TRANSITION_MS = 220;
+const SPLASH_DELAY_MS = 650;
 const STORAGE_KEY = "arabic-grade12-islam-positive-leaderboard";
 const QUESTIONS_DATA_URL = "./questions-data.json";
 
@@ -49,7 +49,6 @@ let pendingTeacherLogoData = "";
 const screens = {
   splash: document.getElementById("splash-screen"),
   auth: document.getElementById("auth-screen"),
-  intro: document.getElementById("intro-screen"),
   start: document.getElementById("start-screen"),
   game: document.getElementById("game-screen"),
   result: document.getElementById("result-screen")
@@ -70,11 +69,14 @@ const authLoginPasswordInput = document.getElementById("auth-login-password");
 const authRegisterBtn = document.getElementById("auth-register-btn");
 const authLoginBtn = document.getElementById("auth-login-btn");
 const authStatus = document.getElementById("auth-status");
-const introContinueBtn = document.getElementById("intro-continue-btn");
-const introWelcomeBtn = document.getElementById("intro-welcome-btn");
-const introSchoolDisplay = document.getElementById("intro-school-display");
-const introTeacherDisplay = document.getElementById("intro-teacher-display");
-const introLogoImage = document.getElementById("intro-logo");
+const togglePasswordPanelBtn = document.getElementById("toggle-password-panel-btn");
+const teacherLogoutBtn = document.getElementById("teacher-logout-btn");
+const passwordPanel = document.getElementById("password-panel");
+const currentPasswordInput = document.getElementById("current-password");
+const newPasswordInput = document.getElementById("new-password");
+const confirmPasswordInput = document.getElementById("confirm-password");
+const savePasswordBtn = document.getElementById("save-password-btn");
+const passwordChangeStatus = document.getElementById("password-change-status");
 const schoolNameInput = document.getElementById("school-name");
 const teacherNameInput = document.getElementById("teacher-name");
 const logoUploadInput = document.getElementById("logo-upload");
@@ -110,7 +112,6 @@ const confirmModal = document.getElementById("confirm-modal");
 const restartBtn = document.getElementById("restart-btn");
 const announceWinnerBtn = document.getElementById("announce-winner-btn");
 const introMusicBtn = document.getElementById("intro-music-btn");
-const welcomeBtn = document.getElementById("welcome-btn");
 const resetBrandingBtn = document.getElementById("reset-branding-btn");
 const fullscreenBtn = document.getElementById("fullscreen-btn");
 const installAppBtn = document.getElementById("install-app-btn");
@@ -227,12 +228,10 @@ const ALL_SUB_LESSON_VALUES = new Set(
     .map((option) => option.value)
 );
 const DEFAULT_LESSON_TITLE = "الضاد";
-const DEFAULT_LEGACY_TITLE = "الإسلام يحارب السلبية";
 const DEFAULT_LESSON_SUBTITLE = "تعلم بمرح";
 const DEFAULT_SCHOOL_NAME = "مدرسة أكاديمية الموهبة المشتركة";
 const DEFAULT_TEACHER_NAME = "معلم اللغة العربية";
 const DEFAULT_LOGO_SRC = "school-logo.png";
-const GAME_LOGO_SRC = "logo-logo.png?v=2";
 const BRANDING_STORAGE_KEY = "arabic-game-branding";
 const QUESTIONS_STORAGE_KEY = "arabic-game-custom-questions";
 const ROUND_SETTINGS_STORAGE_KEY = "arabic-game-round-settings";
@@ -532,12 +531,13 @@ playerNameInput?.addEventListener("input", syncContestantStartAvailability);
 authRegisterBtn?.addEventListener("click", registerTeacherAccount);
 authLoginBtn?.addEventListener("click", loginTeacherAccount);
 authLogoUploadInput?.addEventListener("change", handleTeacherLogoUpload);
+togglePasswordPanelBtn?.addEventListener("click", togglePasswordPanel);
+teacherLogoutBtn?.addEventListener("click", logoutTeacher);
+savePasswordBtn?.addEventListener("click", changeTeacherPassword);
 schoolNameInput.addEventListener("input", updateBranding);
 teacherNameInput.addEventListener("input", updateBranding);
 logoUploadInput.addEventListener("change", handleLogoUpload);
 
-introContinueBtn?.addEventListener("click", () => showScreen("start"));
-introWelcomeBtn?.addEventListener("click", playWelcomeMessage);
 startBtn.addEventListener("click", startGame);
 nextBtn.addEventListener("click", goToNextQuestion);
 endGameBtn.addEventListener("click", openEndGameModal);
@@ -559,7 +559,6 @@ document.addEventListener("keydown", (event) => {
 restartBtn.addEventListener("click", () => showScreen("start"));
 announceWinnerBtn.addEventListener("click", playWinnerAnnouncement);
 introMusicBtn?.addEventListener("click", playIntroMusic);
-welcomeBtn?.addEventListener("click", playWelcomeMessage);
 resetBrandingBtn.addEventListener("click", resetBrandingToDefaults);
 saveQuestionsBtn.addEventListener("click", saveQuestionsFromEditor);
 resetQuestionsBtn.addEventListener("click", resetQuestionsToDefaults);
@@ -702,16 +701,6 @@ function beginOpeningSequence() {
   }, SPLASH_DELAY_MS);
 }
 
-function normalizeLessonTitle(value) {
-  const trimmedValue = (value || "").trim();
-  return !trimmedValue || trimmedValue === DEFAULT_LEGACY_TITLE ? DEFAULT_LESSON_TITLE : trimmedValue;
-}
-
-function normalizeLessonSubtitle(value) {
-  const trimmedValue = (value || "").trim();
-  return !trimmedValue ? DEFAULT_LESSON_SUBTITLE : trimmedValue;
-}
-
 function loadSavedBranding() {
   const savedBranding = JSON.parse(localStorage.getItem(BRANDING_STORAGE_KEY) || "{}");
   const logoSrc = savedBranding.customLogo || DEFAULT_LOGO_SRC;
@@ -719,7 +708,6 @@ function loadSavedBranding() {
   schoolNameInput.value = savedBranding.schoolName || DEFAULT_SCHOOL_NAME;
   teacherNameInput.value = savedBranding.teacherName || DEFAULT_TEACHER_NAME;
   schoolLogoImage.src = logoSrc;
-  introLogoImage.src = GAME_LOGO_SRC;
   pendingTeacherLogoData = savedBranding.customLogo || "";
 
   if (authSchoolNameInput) {
@@ -742,9 +730,6 @@ function updateBranding() {
   lessonSubtitleDisplay.textContent = lessonSubtitle;
   schoolNameDisplay.textContent = schoolName;
   teacherNameDisplay.textContent = `إعداد المعلم/ة: ${teacherName}`;
-  introSchoolDisplay.textContent = schoolName;
-  introTeacherDisplay.textContent = `إعداد المعلم/ة: ${teacherName}`;
-  introLogoImage.src = GAME_LOGO_SRC;
   document.title = `${lessonTitle} | ${lessonSubtitle}`;
 
   localStorage.setItem(
@@ -777,10 +762,11 @@ function resetBrandingToDefaults() {
   teacherNameInput.value = DEFAULT_TEACHER_NAME;
   logoUploadInput.value = "";
   schoolLogoImage.src = DEFAULT_LOGO_SRC;
-  introLogoImage.src = GAME_LOGO_SRC;
   localStorage.removeItem(BRANDING_STORAGE_KEY);
+  authSchoolNameInput && (authSchoolNameInput.value = DEFAULT_SCHOOL_NAME);
+  authTeacherNameInput && (authTeacherNameInput.value = DEFAULT_TEACHER_NAME);
   updateBranding();
-  assistantText.textContent = "المساعد الذكي: تمت إعادة عنوان الدرس واسم المدرسة واسم المعلم والشعار إلى القيم الافتراضية بنجاح.";
+  assistantText.textContent = "المساعد الذكي: تمت إعادة اسم المدرسة واسم المعلم والشعار إلى القيم الافتراضية بنجاح.";
 }
 
 function normalizeQuestionCategory(question) {
@@ -1432,8 +1418,8 @@ function syncTeacherAuthView() {
 
   if (authDescription) {
     authDescription.textContent = hasTeacherAccount
-      ? "أدخل اسم المستخدم وكلمة المرور الخاصين بالمعلم للوصول إلى لوحة إدارة الجلسة."
-      : "أدخل بيانات المدرسة والمعلم مرة واحدة، ثم اختر اسم مستخدم وكلمة مرور خاصين بالمعلم لإدارة الجلسة.";
+      ? "سجّل دخول المعلم للانطلاق في جولة عربية مبهجة وخفيفة للطلاب."
+      : "أدخل بيانات المدرسة والمعلم مرة واحدة لنجهّز مساحة آمنة ومبهجة للطلاب، ثم اختر اسم مستخدم وكلمة مرور خاصين بالمعلم.";
   }
 
   if (!hasTeacherAccount) {
@@ -1553,6 +1539,85 @@ function handleTeacherLogoUpload(event) {
     setAuthStatus("تم اختيار الشعار وسيُحفظ عند إنشاء حساب المعلم.", "success");
   };
   reader.readAsDataURL(file);
+}
+
+function setPasswordStatus(message, type = "") {
+  if (!passwordChangeStatus) return;
+
+  passwordChangeStatus.textContent = message;
+  passwordChangeStatus.classList.remove("error", "success");
+  if (type) {
+    passwordChangeStatus.classList.add(type);
+  }
+}
+
+function togglePasswordPanel() {
+  if (!passwordPanel) return;
+
+  const willShow = passwordPanel.classList.contains("hidden");
+  passwordPanel.classList.toggle("hidden", !willShow);
+  if (togglePasswordPanelBtn) {
+    togglePasswordPanelBtn.textContent = willShow ? "إغلاق تغيير كلمة المرور" : "تغيير كلمة المرور";
+  }
+  setPasswordStatus("يمكنك تغيير كلمة مرور المعلم في أي وقت بعد إدخال الحالية.");
+
+  if (!willShow) {
+    currentPasswordInput && (currentPasswordInput.value = "");
+    newPasswordInput && (newPasswordInput.value = "");
+    confirmPasswordInput && (confirmPasswordInput.value = "");
+  }
+}
+
+function changeTeacherPassword() {
+  const storedAccount = getStoredTeacherAccount();
+  const currentPassword = currentPasswordInput?.value.trim() || "";
+  const newPassword = newPasswordInput?.value.trim() || "";
+  const confirmPassword = confirmPasswordInput?.value.trim() || "";
+
+  if (!storedAccount) {
+    setPasswordStatus("لا يوجد حساب معلم محفوظ حاليًا.", "error");
+    return;
+  }
+
+  if (currentPassword !== storedAccount.password) {
+    setPasswordStatus("كلمة المرور الحالية غير صحيحة.", "error");
+    currentPasswordInput?.focus();
+    return;
+  }
+
+  if (newPassword.length < 4) {
+    setPasswordStatus("كلمة المرور الجديدة يجب أن تكون 4 أحرف على الأقل.", "error");
+    newPasswordInput?.focus();
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    setPasswordStatus("تأكيد كلمة المرور الجديدة غير متطابق.", "error");
+    confirmPasswordInput?.focus();
+    return;
+  }
+
+  localStorage.setItem(TEACHER_AUTH_STORAGE_KEY, JSON.stringify({ ...storedAccount, password: newPassword }));
+  currentPasswordInput && (currentPasswordInput.value = "");
+  newPasswordInput && (newPasswordInput.value = "");
+  confirmPasswordInput && (confirmPasswordInput.value = "");
+  authLoginPasswordInput && (authLoginPasswordInput.value = "");
+  setPasswordStatus("تم تغيير كلمة المرور بنجاح.", "success");
+}
+
+function logoutTeacher() {
+  setTeacherAuthenticated(false);
+  passwordPanel?.classList.add("hidden");
+  if (togglePasswordPanelBtn) {
+    togglePasswordPanelBtn.textContent = "تغيير كلمة المرور";
+  }
+  currentPasswordInput && (currentPasswordInput.value = "");
+  newPasswordInput && (newPasswordInput.value = "");
+  confirmPasswordInput && (confirmPasswordInput.value = "");
+  authLoginPasswordInput && (authLoginPasswordInput.value = "");
+  syncTeacherAuthView();
+  showScreen("auth");
+  assistantText.textContent = "المساعد الذكي: تم تسجيل خروج المعلم بنجاح.";
 }
 
 function setAnswerButtonsEnabled(enabled) {

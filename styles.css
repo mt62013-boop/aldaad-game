@@ -1,22 +1,22 @@
 :root {
-  --bg: #16324f;
-  --panel: rgba(19, 44, 71, 0.72);
+  --bg: #234a7a;
+  --panel: rgba(38, 77, 123, 0.68);
   --card: #ffffff;
-  --primary: #4aa3a2;
-  --primary-dark: #2f6f79;
-  --secondary: #8abf7b;
-  --success: #3f9b68;
-  --danger: #c75b5b;
-  --warning: #d3b06b;
-  --text: #16324f;
-  --soft-text: #526377;
-  --line: #d9e6ea;
-  --brand-gradient: linear-gradient(135deg, #2f6f79 0%, #4aa3a2 56%, #f59e0b 100%);
-  --brand-gradient-soft: linear-gradient(135deg, #8abf7b 0%, #4aa3a2 56%, #fb923c 100%);
-  --brand-shadow: 0 12px 24px rgba(18, 41, 65, 0.18);
-  --surface-gradient: linear-gradient(180deg, rgba(74, 163, 162, 0.10) 0%, rgba(255, 255, 255, 0.98) 24%, rgba(255, 255, 255, 0.96) 100%);
-  --surface-border: rgba(22, 50, 79, 0.16);
-  --surface-shadow: 0 14px 28px rgba(18, 41, 65, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.88);
+  --primary: #68d8d6;
+  --primary-dark: #2f5eaa;
+  --secondary: #ffd166;
+  --success: #24b47e;
+  --danger: #e66a6a;
+  --warning: #f7b955;
+  --text: #17324d;
+  --soft-text: #5a6d83;
+  --line: #dce7f7;
+  --brand-gradient: linear-gradient(135deg, #6c8cff 0%, #68d8d6 52%, #ffd166 100%);
+  --brand-gradient-soft: linear-gradient(135deg, #ffafcc 0%, #bde0fe 50%, #caffbf 100%);
+  --brand-shadow: 0 14px 30px rgba(27, 61, 101, 0.16);
+  --surface-gradient: linear-gradient(180deg, rgba(104, 216, 214, 0.14) 0%, rgba(255, 255, 255, 0.98) 28%, rgba(255, 255, 255, 0.96) 100%);
+  --surface-border: rgba(58, 95, 151, 0.14);
+  --surface-shadow: 0 12px 24px rgba(27, 61, 101, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.90);
 }
 
 * {
@@ -30,7 +30,7 @@ html {
 body {
   margin: 0;
   font-family: "Cairo", sans-serif;
-  background: linear-gradient(135deg, #16324f 0%, #4aa3a2 48%, #8abf7b 100%);
+  background: linear-gradient(135deg, #6c8cff 0%, #68d8d6 42%, #ffd166 100%);
   color: #fff;
   min-height: 100vh;
   min-height: 100dvh;
@@ -40,58 +40,16 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-.app-watermark {
-  position: fixed;
-  z-index: 3;
-  pointer-events: none;
-  -webkit-user-select: none;
-  user-select: none;
-  font-family: "Aref Ruqaa Ink", "Cairo", serif;
-  font-size: clamp(1.12rem, 2vw, 1.46rem);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: rgba(250, 221, 134, 0.46);
-  -webkit-text-stroke: 0.45px rgba(255, 248, 220, 0.3);
-  text-shadow:
-    0 1px 6px rgba(22, 50, 79, 0.18),
-    0 0 12px rgba(245, 190, 55, 0.2),
-    0 0 18px rgba(255, 235, 150, 0.12);
-}
-
-.app-watermark.top-left {
-  top: 14px;
-  left: 16px;
-  transform: rotate(-10deg);
-}
-
-.app-watermark.top-right {
-  top: 14px;
-  right: 16px;
-  transform: rotate(10deg);
-}
-
-.app-watermark.bottom-left {
-  bottom: 12px;
-  left: 16px;
-  transform: rotate(-10deg);
-}
-
-.app-watermark.bottom-right {
-  bottom: 12px;
-  right: 16px;
-  transform: rotate(10deg);
-}
-
 body::before,
 body::after {
   content: "";
   position: fixed;
   border-radius: 50%;
   filter: blur(70px);
-  opacity: 0.18;
+  opacity: 0.13;
   z-index: 0;
   pointer-events: none;
-  animation: backgroundDrift 14s ease-in-out infinite;
+  animation: backgroundDrift 18s ease-in-out infinite;
 }
 
 .page-corner {
@@ -465,11 +423,13 @@ main {
 
 .badge {
   display: inline-block;
-  padding: 6px 12px;
+  padding: 7px 13px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
-  color: #fff;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 248, 220, 0.86));
+  color: var(--primary-dark);
   font-size: 0.9rem;
+  font-weight: 800;
+  box-shadow: 0 8px 18px rgba(47, 94, 170, 0.12);
 }
 
 .panel {
@@ -484,8 +444,8 @@ main {
 }
 
 main > section.panel {
-  will-change: opacity, transform, filter;
-  transition: opacity 0.3s ease, transform 0.3s ease, filter 0.3s ease;
+  will-change: opacity, transform;
+  transition: opacity 0.22s ease, transform 0.22s ease, filter 0.22s ease;
 }
 
 main > section.panel.screen-enter,
@@ -495,8 +455,8 @@ main > section.panel.screen-exit-active {
 
 main > section.panel.screen-enter {
   opacity: 0;
-  transform: translateY(16px) scale(0.985);
-  filter: blur(6px);
+  transform: translateY(10px) scale(0.99);
+  filter: blur(3px);
 }
 
 main > section.panel.screen-enter.screen-enter-active {
@@ -513,8 +473,8 @@ main > section.panel.screen-exit {
 
 main > section.panel.screen-exit.screen-exit-active {
   opacity: 0;
-  transform: translateY(-10px) scale(0.992);
-  filter: blur(5px);
+  transform: translateY(-8px) scale(0.995);
+  filter: blur(3px);
 }
 
 .hidden {
@@ -667,16 +627,6 @@ main > section.panel.screen-exit.screen-exit-active {
   background: var(--brand-gradient);
 }
 
-.intro-school-logo {
-  width: 110px;
-  height: 110px;
-  object-fit: contain;
-  margin-bottom: 12px;
-  filter: drop-shadow(0 10px 20px rgba(22, 50, 79, 0.18));
-  transform-origin: center;
-  animation: cinematicLogoReveal 0.95s cubic-bezier(0.18, 0.84, 0.22, 1) both;
-}
-
 .welcome-badge {
   margin-bottom: 12px;
 }
@@ -693,36 +643,6 @@ main > section.panel.screen-exit.screen-exit-active {
   line-height: 1.9;
   color: var(--soft-text);
   animation: welcomeTextRise 0.55s ease-out 0.28s both;
-}
-
-.welcome-meta {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
-  margin-top: 14px;
-  animation: welcomeTextRise 0.55s ease-out 0.38s both;
-}
-
-.welcome-meta div {
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid var(--surface-border);
-  border-radius: 16px;
-  box-shadow: var(--surface-shadow);
-  padding: 12px 14px;
-}
-
-.welcome-meta strong,
-.welcome-meta span {
-  display: block;
-}
-
-.welcome-meta strong {
-  color: var(--primary-dark);
-  margin-bottom: 6px;
-}
-
-.welcome-meta span {
-  color: var(--soft-text);
 }
 
 .welcome-actions {
@@ -748,6 +668,33 @@ main > section.panel.screen-exit.screen-exit-active {
 
 .auth-status {
   margin-top: 14px;
+}
+
+.teacher-security-box {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(108, 140, 255, 0.16);
+}
+
+.teacher-security-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.password-panel {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(47, 94, 170, 0.2);
+}
+
+.password-change-status.success {
+  color: #166534;
+}
+
+.password-change-status.error {
+  color: #b91c1c;
 }
 
 .auth-status.success {
