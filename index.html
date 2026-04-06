@@ -12,7 +12,44 @@
     <h1>لعبة التفاعل في اللغة العربية</h1>
   </header>
   <main class="main-content">
-    <section id="domainSection">
+    <!-- نموذج دخول المعلم -->
+    <section id="adminLoginSection">
+      <h2>دخول المعلم</h2>
+      <input type="password" id="adminPassword" placeholder="كلمة مرور المعلم" autocomplete="off" />
+      <button id="adminLoginBtn" class="edit-btn">دخول</button>
+      <div id="adminLoginMsg" style="color:#c00; margin-top:8px;"></div>
+    </section>
+    <!-- نموذج اسم الطالب -->
+    <section id="studentNameSection" class="hidden-section">
+      <h2>أدخل اسمك للبدء</h2>
+      <input type="text" id="studentNameInput" placeholder="اسم الطالب" autocomplete="off" />
+      <button id="studentStartBtn" class="edit-btn">بدء الاختبار</button>
+      <div id="studentNameMsg" style="color:#c00; margin-top:8px;"></div>
+    </section>
+    <!-- لوحة تحكم المعلم -->
+    <section id="adminPanelSection" class="hidden-section">
+      <h2>لوحة تحكم المعلم</h2>
+      <div style="margin-bottom:10px;">
+        <label>المجال:
+          <select id="adminDomainSelect">
+            <option value="comprehension">الفهم والثروة</option>
+            <option value="rhetoric">البلاغة</option>
+            <option value="grammar">القواعد</option>
+          </select>
+        </label>
+        <label id="adminBranchLabel" style="display:none;">
+          الفرع:
+          <select id="adminBranchSelect"></select>
+        </label>
+        <label>عدد الأسئلة:
+          <input type="number" id="adminNumQuestions" min="1" max="50" value="5" style="width:60px;" />
+        </label>
+        <button id="adminStartQuizBtn" class="edit-btn">بدء اختبار للطالب</button>
+      </div>
+      <button id="adminLogoutBtn" class="back-btn">تسجيل خروج</button>
+    </section>
+    <!-- واجهة الطالب والاختبار (كما كانت) -->
+    <section id="domainSection" class="hidden-section">
       <h2>اختر المجال</h2>
       <div class="domain-btns">
         <button class="domain-btn" data-domain="comprehension">الفهم والثروة</button>
@@ -30,8 +67,15 @@
       <div id="questionArea"></div>
       <form id="answerForm"></form>
       <div id="resultArea"></div>
+      <div id="quizProgress" style="margin:10px 0; color:#444;"></div>
       <button id="generateQuestionBtn" class="edit-btn hidden-btn">توليد سؤال جديد</button>
       <button id="backToBranches" class="back-btn">رجوع</button>
+    </section>
+    <!-- نتيجة الطالب -->
+    <section id="studentResultSection" class="hidden-section">
+      <h2>نتيجتك</h2>
+      <div id="studentResultMsg"></div>
+      <button id="studentRestartBtn" class="edit-btn">إعادة المحاولة</button>
     </section>
   </main>
   <footer class="main-footer">

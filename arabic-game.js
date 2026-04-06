@@ -1,3 +1,177 @@
+// --- متغيرات واجهات التحكم ---
+const adminLoginSection = document.getElementById('adminLoginSection');
+const adminLoginBtn = document.getElementById('adminLoginBtn');
+const adminLoginMsg = document.getElementById('adminLoginMsg');
+const adminPassword = document.getElementById('adminPassword');
+
+const studentNameSection = document.getElementById('studentNameSection');
+const studentNameInput = document.getElementById('studentNameInput');
+const studentStartBtn = document.getElementById('studentStartBtn');
+const studentNameMsg = document.getElementById('studentNameMsg');
+
+const adminPanelSection = document.getElementById('adminPanelSection');
+const adminDomainSelect = document.getElementById('adminDomainSelect');
+const adminBranchLabel = document.getElementById('adminBranchLabel');
+const adminBranchSelect = document.getElementById('adminBranchSelect');
+const adminNumQuestions = document.getElementById('adminNumQuestions');
+const adminStartQuizBtn = document.getElementById('adminStartQuizBtn');
+const adminLogoutBtn = document.getElementById('adminLogoutBtn');
+
+const studentResultSection = document.getElementById('studentResultSection');
+const studentResultMsg = document.getElementById('studentResultMsg');
+const studentRestartBtn = document.getElementById('studentRestartBtn');
+const quizProgress = document.getElementById('quizProgress');
+
+// --- منطق دخول المعلم ---
+let isAdmin = false;
+adminLoginBtn.onclick = function() {
+  const pass = adminPassword.value.trim();
+  const user = 'admin'; // اسم مستخدم ثابت
+  if (user === 'admin' && pass === '1234') {
+    isAdmin = true;
+    adminLoginSection.classList.add('hidden-section');
+    adminPanelSection.classList.remove('hidden-section');
+    adminLoginMsg.textContent = '';
+    adminPassword.value = '';
+    // تحديث الفروع حسب المجال الافتراضي
+    updateAdminBranches();
+  } else {
+    adminLoginMsg.textContent = 'كلمة المرور أو اسم المستخدم غير صحيح.';
+  }
+};
+adminLogoutBtn.onclick = function() {
+  isAdmin = false;
+  adminPanelSection.classList.add('hidden-section');
+  adminLoginSection.classList.remove('hidden-section');
+};
+
+// --- تحديث قائمة الفروع في لوحة المعلم ---
+function updateAdminBranches() {
+  const domain = adminDomainSelect.value;
+  if (domain === 'rhetoric' || domain === 'grammar') {
+    adminBranchLabel.style.display = '';
+    adminBranchSelect.innerHTML = '';
+    (branches[domain] || []).forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f;
+      opt.textContent = f;
+      adminBranchSelect.appendChild(opt);
+    });
+  } else {
+    adminBranchLabel.style.display = 'none';
+    adminBranchSelect.innerHTML = '';
+  }
+}
+adminDomainSelect.onchange = updateAdminBranches;
+
+// --- بدء اختبار الطالب من لوحة المعلم ---
+adminStartQuizBtn.onclick = function() {
+  adminPanelSection.classList.add('hidden-section');
+  studentNameSection.classList.remove('hidden-section');
+  studentNameInput.value = '';
+  studentNameMsg.textContent = '';
+};
+
+// --- بدء الاختبار بعد إدخال اسم الطالب ---
+let currentQuiz = null;
+studentStartBtn.onclick = function() {
+  const name = studentNameInput.value.trim();
+  if (!name) {
+    studentNameMsg.textContent = 'يرجى إدخال الاسم.';
+    return;
+  }
+  studentNameMsg.textContent = '';
+  studentNameSection.classList.add('hidden-section');
+  // إعداد الأسئلة حسب اختيار المعلم
+  const domain = adminDomainSelect.value;
+  const branch = (adminBranchLabel.style.display !== 'none') ? adminBranchSelect.value : null;
+  let qs = [];
+  if (branch) {
+    qs = questions[branch] ? [...questions[branch]] : [];
+  } else {
+    qs = questions[domain] ? [...questions[domain]] : [];
+  }
+  // عشوائي وعدد الأسئلة
+  const num = Math.min(parseInt(adminNumQuestions.value) || 5, qs.length);
+  shuffleArray(qs);
+  currentQuiz = {
+    student: name,
+    domain,
+    branch,
+    questions: qs.slice(0, num),
+    idx: 0,
+    correct: 0
+  };
+  showQuizQuestion();
+};
+
+// --- عرض سؤال الاختبار للطالب ---
+function showQuizQuestion() {
+  if (!currentQuiz) return;
+  const {questions, idx} = currentQuiz;
+  if (idx >= questions.length) {
+    showStudentResult();
+    return;
+  }
+  const q = questions[idx];
+  domainSection.classList.add('hidden-section');
+  branchSection.classList.add('hidden-section');
+  questionSection.classList.remove('hidden-section');
+  questionArea.textContent = q.q;
+  answerForm.innerHTML = '';
+  resultArea.textContent = '';
+  quizProgress.innerHTML = `السؤال ${idx+1} من ${questions.length}`;
+  if (q.type === 'tf') {
+    ['صح', 'خطأ'].forEach(opt => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = opt;
+      btn.onclick = () => checkQuizAnswer(opt);
+      answerForm.appendChild(btn);
+    });
+  } else if (q.type === 'mcq') {
+    q.options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = opt;
+      btn.onclick = () => checkQuizAnswer(opt);
+      answerForm.appendChild(btn);
+    });
+  }
+  if (generateQuestionBtn) generateQuestionBtn.style.display = 'none';
+}
+
+function checkQuizAnswer(ans) {
+  if (!currentQuiz) return;
+  const q = currentQuiz.questions[currentQuiz.idx];
+  if (ans === q.answer) {
+    resultArea.textContent = 'إجابة صحيحة ✔';
+    currentQuiz.correct++;
+  } else {
+    resultArea.textContent = 'إجابة خاطئة ✖';
+  }
+  currentQuiz.idx++;
+  setTimeout(showQuizQuestion, 1000);
+}
+
+function showStudentResult() {
+  questionSection.classList.add('hidden-section');
+  studentResultSection.classList.remove('hidden-section');
+  studentResultMsg.innerHTML = `أحسنت يا <b>${currentQuiz.student}</b>!<br>درجتك: <b>${currentQuiz.correct}</b> من <b>${currentQuiz.questions.length}</b>`;
+}
+studentRestartBtn.onclick = function() {
+  studentResultSection.classList.add('hidden-section');
+  adminPanelSection.classList.remove('hidden-section');
+  currentQuiz = null;
+};
+
+// --- دالة خلط عشوائي للأسئلة ---
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
 // المجالات والفروع
 const branches = {
   rhetoric: [
