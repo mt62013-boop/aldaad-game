@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>واجهة الطالب | TAH-AR</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="logo-small">
+      <img src="assets/logo.svg" alt="شعار اللعبة" height="50">
+      <span>TAH-AR</span>
+    </div>
+  </header>
+  <main>
+    <section class="student-panel">
+      <h2>مرحبًا بك في المسابقة!</h2>
+      <div id="student-quiz-area"></div>
+      <div id="student-chat">
+        <form id="comment-form">
+          <label for="comment-input">أرسل تعليقك أو سؤالك للمعلم:</label>
+          <textarea id="comment-input" rows="2" required></textarea>
+          <button type="submit">إرسال</button>
+        </form>
+        <div id="comments-list"></div>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <span>جميع الحقوق محفوظة &copy; طه كامل 2026</span>
+  </footer>
+  <script src="app.js"></script>
+  <script src="student.js"></script>
+</body>
+</html>

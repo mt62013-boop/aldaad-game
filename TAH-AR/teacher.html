@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة تحكم المعلم | TAH-AR</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="logo-small">
+      <img src="assets/logo.svg" alt="شعار اللعبة" height="50">
+      <span>TAH-AR</span>
+    </div>
+  </header>
+  <main>
+    <section class="teacher-panel">
+      <h2>لوحة تحكم المعلم</h2>
+      <div class="icon-buttons">
+        <button class="icon-btn" id="btn-all-fields">كل المجالات</button>
+        <button class="icon-btn" id="btn-field">مجال معين</button>
+        <button class="icon-btn" id="btn-branch">فرع معين</button>
+        <button class="icon-btn" id="btn-add-question">إضافة سؤال</button>
+        <button class="icon-btn" id="btn-edit-question">تعديل سؤال</button>
+        <button class="icon-btn" id="btn-delete-question">حذف سؤال</button>
+        <button class="icon-btn" id="btn-start-game">بدء الجولة</button>
+        <button class="icon-btn" id="btn-show-results">عرض النتائج</button>
+      </div>
+      <div id="questions-area"></div>
+      <div id="teacher-chat">
+        <h3>تعليقات الطلاب (محليًا):</h3>
+        <div id="teacher-comments-list"></div>
+        <form id="reply-form" style="margin-top:1.5em">
+          <label for="reply-input">رد على تعليق الطالب (اكتب رقم التعليق):</label>
+          <input type="number" id="reply-index" min="1" style="width:60px" required>
+          <input type="text" id="reply-input" placeholder="اكتب الرد هنا..." required style="width:50%">
+          <button type="submit">إرسال الرد</button>
+        </form>
+        <div id="teacher-replies-list"></div>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <span>جميع الحقوق محفوظة &copy; طه كامل 2026</span>
+  </footer>
+  <script src="app.js"></script>
+  <script src="teacher.js"></script>
+</body>
+</html>

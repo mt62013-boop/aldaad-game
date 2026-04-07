@@ -1,7 +1,0 @@
-# Local source materials
-*.pdf
-!references/*.pdf
-*_extracted.txt
-
-# Local Python environment
-.venv/
